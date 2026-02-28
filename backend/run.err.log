@@ -1,0 +1,10 @@
+D:\sovga\UY-DOKON\backend\node_modules\jsonwebtoken\sign.js:111
+    return failure(new Error('secretOrPrivateKey must have a value'));
+                   ^
+
+Error: secretOrPrivateKey must have a value
+    at module.exports [as sign] (D:\sovga\UY-DOKON\backend\node_modules\jsonwebtoken\sign.js:111:20)
+    at file:///D:/sovga/UY-DOKON/backend/src/routes/authRoutes.js:26:21
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v22.21.0
