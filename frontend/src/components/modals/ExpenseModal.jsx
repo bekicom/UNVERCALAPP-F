@@ -1,10 +1,18 @@
-export function ExpenseModal({ open, loading, form, setForm, onSubmit, onClose, error }) {
+export function ExpenseModal({
+  open,
+  loading,
+  form,
+  setForm,
+  onSubmit,
+  onClose,
+  error,
+}) {
   if (!open) return null;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <h3>{form.id ? "Xarajatni tahrirlash" : "Yangi xarajat"}</h3>
+        <h3>{form.id ? "Xarajatni edit" : "Yangi xarajat"}</h3>
         <form className="modal-form" onSubmit={onSubmit}>
           <label>
             Xarajat summasi
@@ -13,7 +21,9 @@ export function ExpenseModal({ open, loading, form, setForm, onSubmit, onClose, 
               min="0"
               step="0.01"
               value={form.amount}
-              onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, amount: e.target.value }))
+              }
               placeholder="30000"
               required
             />
@@ -22,7 +32,9 @@ export function ExpenseModal({ open, loading, form, setForm, onSubmit, onClose, 
             Sababi
             <input
               value={form.reason}
-              onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, reason: e.target.value }))
+              }
               placeholder="Svet energiya uchun"
               required
             />
@@ -32,14 +44,20 @@ export function ExpenseModal({ open, loading, form, setForm, onSubmit, onClose, 
             <input
               type="date"
               value={form.spentAt}
-              onChange={(e) => setForm((p) => ({ ...p, spentAt: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, spentAt: e.target.value }))
+              }
               required
             />
           </label>
           {error ? <p className="error-text">{error}</p> : null}
           <div className="modal-actions">
-            <button type="button" className="ghost" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" disabled={loading}>{loading ? "Saqlanmoqda..." : "Saqlash"}</button>
+            <button type="button" className="ghost" onClick={onClose}>
+              Bekor qilish
+            </button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Saqlanmoqda..." : "Saqlash"}
+            </button>
           </div>
         </form>
       </div>

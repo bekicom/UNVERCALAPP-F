@@ -1,12 +1,12 @@
 import { Icon } from "../Icon";
-import { formatMoney, getCategoryName, getSupplierName, normalizeUnit } from "../../utils/format";
+import {
+  formatMoney,
+  getCategoryName,
+  getSupplierName,
+  normalizeUnit,
+} from "../../utils/format";
 
-export function ProductsSection({
-  products,
-  onRestock,
-  onEdit,
-  onDelete
-}) {
+export function ProductsSection({ products, onRestock, onEdit, onDelete }) {
   return (
     <section className="table-wrap">
       <table>
@@ -36,7 +36,9 @@ export function ProductsSection({
               <td>{formatMoney(p.purchasePrice)}</td>
               <td>{formatMoney(p.retailPrice)}</td>
               <td>{formatMoney(p.wholesalePrice)}</td>
-              <td>{p.paymentType || "naqd"} / {formatMoney(p.debtAmount)}</td>
+              <td>
+                {p.paymentType || "naqd"} / {formatMoney(p.debtAmount)}
+              </td>
               <td>
                 {p.unit === "qop" && p.allowPieceSale
                   ? `1 qop = ${p.pieceQtyPerBase} ${p.pieceUnit}, 1 ${p.pieceUnit} = ${formatMoney(p.piecePrice)}`
@@ -45,13 +47,37 @@ export function ProductsSection({
               <td className="stock">{p.quantity}</td>
               <td>{normalizeUnit(p.unit)}</td>
               <td className="actions-cell">
-                <button type="button" className="action-btn" onClick={() => onRestock(p)}><Icon name="download" />Kirim</button>
-                <button type="button" className="action-btn edit" onClick={() => onEdit(p)}><Icon name="edit" />Tahrirlash</button>
-                <button type="button" className="action-btn delete" onClick={() => onDelete(p._id)}><Icon name="trash" />O'chirish</button>
+                <button
+                  type="button"
+                  className="action-btn"
+                  onClick={() => onRestock(p)}
+                >
+                  <Icon name="download" />
+                  Kirim
+                </button>
+                <button
+                  type="button"
+                  className="action-btn edit"
+                  onClick={() => onEdit(p)}
+                >
+                  <Icon name="edit" />
+                  edit
+                </button>
+                <button
+                  type="button"
+                  className="action-btn delete"
+                  onClick={() => onDelete(p._id)}
+                >
+                  <Icon name="trash" />
+                </button>
               </td>
             </tr>
           ))}
-          {products.length === 0 ? <tr><td colSpan="12">Mahsulot topilmadi</td></tr> : null}
+          {products.length === 0 ? (
+            <tr>
+              <td colSpan="12">Mahsulot topilmadi</td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
     </section>

@@ -12,7 +12,7 @@ export const baseApi = createApi({
       return headers;
     }
   }),
-  tagTypes: ["Overview", "Category", "Supplier", "Product", "Expense", "SupplierFinance"],
+  tagTypes: ["Overview", "User", "Category", "Supplier", "Product", "Expense", "SupplierFinance", "Sale"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({ url: "/auth/login", method: "POST", body })
@@ -20,6 +20,18 @@ export const baseApi = createApi({
     getOverview: builder.query({
       query: () => "/admin/overview",
       providesTags: ["Overview"]
+    }),
+    getUsers: builder.query({
+      query: () => "/admin/users",
+      providesTags: ["User"]
+    }),
+    createUser: builder.mutation({
+      query: (body) => ({ url: "/admin/users", method: "POST", body }),
+      invalidatesTags: ["User", "Overview"]
+    }),
+    updateUser: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/admin/users/${id}`, method: "PUT", body }),
+      invalidatesTags: ["User", "Overview"]
     }),
     getCategories: builder.query({
       query: () => "/categories",
@@ -88,6 +100,21 @@ export const baseApi = createApi({
     deleteExpense: builder.mutation({
       query: (id) => ({ url: `/expenses/${id}`, method: "DELETE" }),
       invalidatesTags: ["Expense"]
+    }),
+    getSales: builder.query({
+      query: ({ limit = 100, period = "", from = "", to = "" } = {}) => {
+        const params = new URLSearchParams();
+        params.set("limit", String(limit));
+        if (period) params.set("period", period);
+        if (from) params.set("from", from);
+        if (to) params.set("to", to);
+        return `/sales?${params.toString()}`;
+      },
+      providesTags: ["Sale"]
+    }),
+    createSale: builder.mutation({
+      query: (body) => ({ url: "/sales", method: "POST", body }),
+      invalidatesTags: ["Sale", "Product", "Overview"]
     })
   })
 });
@@ -95,6 +122,9 @@ export const baseApi = createApi({
 export const {
   useLoginMutation,
   useGetOverviewQuery,
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useGetSuppliersQuery,
@@ -111,5 +141,7 @@ export const {
   useGetExpensesQuery,
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
-  useDeleteExpenseMutation
+  useDeleteExpenseMutation,
+  useGetSalesQuery,
+  useCreateSaleMutation
 } = baseApi;

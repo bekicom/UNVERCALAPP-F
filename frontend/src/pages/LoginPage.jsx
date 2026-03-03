@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useLoginMutation } from "../app/api/baseApi";
 
 export function LoginPage({ onLogin }) {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("0000");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loginMutation, { isLoading }] = useLoginMutation();
 
@@ -22,11 +22,11 @@ export function LoginPage({ onLogin }) {
     <main className="auth-page">
       <div className="auth-card">
         <p className="badge">UY-DOKON</p>
-        <h1>Admin Login</h1>
-        <p className="hint">Demo login: admin / 0000</p>
+        <h1>Tizimga Kirish</h1>
+        <p className="hint">Admin yoki kassir hisobingiz bilan kiring.</p>
         <form onSubmit={handleSubmit} className="auth-form">
-          <label>Login<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin" /></label>
-          <label>Parol<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="0000" /></label>
+          <label>Login<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Login kiriting" /></label>
+          <label>Parol<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Parol kiriting" /></label>
           {error ? <p className="error-text">{error}</p> : null}
           <button type="submit" disabled={isLoading}>{isLoading ? "Kirilmoqda..." : "Kirish"}</button>
         </form>

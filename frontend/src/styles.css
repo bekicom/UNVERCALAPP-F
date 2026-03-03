@@ -393,6 +393,73 @@ th {
   gap: 10px;
 }
 
+.sales-cards {
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.sales-mini-card {
+  min-height: 84px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.sales-mini-card h2 {
+  font-size: 12px;
+  margin: 0;
+}
+
+.sales-mini-card p {
+  margin: 6px 0 0;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.sales-mini-sales { background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(30, 58, 138, 0.25)); }
+.sales-mini-revenue { background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(12, 74, 110, 0.25)); }
+.sales-mini-cash { background: linear-gradient(135deg, rgba(22, 163, 74, 0.35), rgba(20, 83, 45, 0.25)); }
+.sales-mini-cardpay { background: linear-gradient(135deg, rgba(234, 88, 12, 0.35), rgba(124, 45, 18, 0.25)); }
+.sales-mini-click { background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(88, 28, 135, 0.25)); }
+.sales-mini-profit { background: linear-gradient(135deg, rgba(20, 184, 166, 0.35), rgba(19, 78, 74, 0.25)); }
+
+.sales-filter-row {
+  display: grid;
+  gap: 10px;
+}
+
+.sales-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.sales-filter-buttons button {
+  background: rgba(30, 58, 138, 0.18);
+  color: #1e293b;
+}
+
+.sales-filter-buttons button.active {
+  background: linear-gradient(135deg, #1d4ed8, #0284c7);
+  color: #fff;
+}
+
+.sales-date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sales-date-range label {
+  color: #334155;
+}
+
+.sales-date-range input {
+  background: #fff;
+  color: #334155;
+}
+
 .card {
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -408,6 +475,408 @@ th {
 .card p {
   font-size: 24px;
   margin: 6px 0 0;
+}
+
+.cashier-page {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr 430px;
+  background: #101722;
+  color: #e8eff8;
+}
+
+.cashier-left {
+  background: linear-gradient(180deg, #1d2a3d 0%, #111a27 100%);
+  border-right: 1px solid rgba(127, 146, 170, 0.25);
+  padding: 14px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+}
+
+.cashier-brand h2 {
+  margin: 8px 0 4px;
+}
+
+.cashier-cats {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.cashier-cat-btn {
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgba(146, 166, 190, 0.2);
+  background: rgba(28, 41, 59, 0.8);
+  color: #c6d5e9;
+  justify-content: flex-start;
+}
+
+.cashier-cat-btn.active {
+  background: linear-gradient(135deg, #11989e, #0e7490);
+  border-color: rgba(62, 220, 212, 0.6);
+}
+
+.cashier-center {
+  padding: 14px;
+  border-right: 1px solid rgba(127, 146, 170, 0.2);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+}
+
+.cashier-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #202b3a;
+  border: 1px solid rgba(131, 151, 176, 0.24);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.cashier-search {
+  flex: 1;
+  border: 1px solid rgba(131, 151, 176, 0.24);
+  border-radius: 10px;
+  background: #141d2a;
+  color: #f4f9ff;
+  padding: 10px 12px;
+}
+
+.cashier-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  align-content: start;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.cashier-product-card {
+  min-height: 128px;
+  background: linear-gradient(160deg, #123448, #0f2737);
+  border: 1px solid rgba(121, 208, 220, 0.25);
+  border-radius: 12px;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  align-content: space-between;
+}
+
+.cashier-product-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.cashier-product-card p {
+  margin: 0;
+  color: #9cc9dd;
+  font-size: 12px;
+}
+
+.cashier-card-foot {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.cashier-right {
+  padding: 14px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  gap: 12px;
+  background: #151d2a;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.cashier-right h3 {
+  margin: 0;
+}
+
+.cashier-cart-table {
+  background: #222c3b;
+  border: 1px solid rgba(131, 151, 176, 0.24);
+  border-radius: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.cashier-cart-table table {
+  min-width: 0;
+  width: 100%;
+  table-layout: auto;
+}
+
+.cashier-col-product { width: 30%; }
+.cashier-col-price { width: 16%; }
+.cashier-col-qty { width: 30%; }
+.cashier-col-sum { width: 16%; }
+.cashier-col-del { width: 8%; }
+
+.cashier-cart-table th {
+  white-space: nowrap;
+}
+
+.cashier-cart-table th,
+.cashier-cart-table td {
+  padding: 10px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(117, 136, 160, 0.3);
+  color: #e2ebf7;
+  vertical-align: middle;
+}
+
+.cashier-cart-table th {
+  background: #2d394a;
+}
+
+.cashier-qty {
+  display: inline-grid;
+  grid-template-columns: 20px 50px 20px auto;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.cashier-qty button {
+  width: 22px;
+  height: 22px;
+  min-width: 20px;
+  padding: 0;
+  border-radius: 5px;
+  background: #334154;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+
+
+}
+
+.cashier-qty input {
+  width: 50px;
+  padding: 4px 4px;
+  text-align: center;
+  border-radius: 6px;
+  background: #111a26;
+  font-size: 12px;
+}
+
+.cashier-qty-unit {
+  font-size: 10px;
+  color: #bcd0e8;
+  font-weight: 600;
+  min-width: 20px;
+}
+
+.cashier-del-btn {
+  width: 22px;
+  min-width: 22px;
+  height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cashier-pay {
+  background: #1d2736;
+  border: 1px solid rgba(131, 151, 176, 0.24);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.cashier-pay p {
+  margin: 0 0 10px;
+}
+
+.cashier-pay-types {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.cashier-pay-types button {
+  background: #313f52;
+  border: 1px solid transparent;
+}
+
+.cashier-pay-types button.active {
+  background: linear-gradient(135deg, #0891b2, #0f766e);
+  border-color: rgba(83, 241, 234, 0.45);
+}
+
+.cashier-mix-box {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #111a26;
+  border: 1px solid rgba(132, 152, 177, 0.24);
+}
+
+.cashier-mix-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.cashier-mix-head button {
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.cashier-mix-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cashier-mix-grid label {
+  gap: 4px;
+  font-size: 12px;
+}
+
+.cashier-mix-grid input {
+  padding: 7px 8px;
+}
+
+.cashier-mix-total {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.cashier-mix-total.ok {
+  color: #6ee7b7;
+}
+
+.cashier-mix-total.bad {
+  color: #fca5a5;
+}
+
+.cashier-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #202a39;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.cashier-total strong {
+  font-size: 28px;
+}
+
+.cashier-sell-btn {
+  height: 56px;
+  border-radius: 12px;
+  font-size: 20px;
+  background: linear-gradient(135deg, #0eacb4, #0f766e);
+}
+
+.cashier-sell-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cashier-error {
+  margin: -2px 0 0;
+  font-size: 12px;
+}
+
+.cashier-history-btn {
+  height: 44px;
+  justify-content: center;
+}
+
+.qty-keypad-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 20, 0.62);
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+}
+
+.qty-keypad {
+  background: #0f1724;
+  border: 1px solid rgba(133, 152, 177, 0.28);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  width: min(380px, 95vw);
+}
+
+.qty-keypad-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qty-keypad-head strong {
+  font-size: 14px;
+}
+
+.qty-keypad-display {
+  height: 40px;
+  border-radius: 8px;
+  background: #0a111c;
+  border: 1px solid rgba(133, 152, 177, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.qty-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.qty-keypad-grid button {
+  height: 42px;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
+.qty-keypad-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sales-history-wrap {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 10px;
+}
+
+.sales-history-table {
+  min-width: 0;
+  width: 100%;
+}
+
+.sales-history-table th,
+.sales-history-table td {
+  font-size: 12px;
 }
 
 @media (max-width: 1000px) {
@@ -429,6 +898,41 @@ th {
   }
 
   .panel-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-cards {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .sales-filter-buttons {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .sales-date-range {
+    grid-template-columns: 1fr;
+  }
+
+  .cashier-page {
+    grid-template-columns: 1fr;
+  }
+
+  .cashier-left,
+  .cashier-center {
+    border-right: none;
+    border-bottom: 1px solid rgba(127, 146, 170, 0.2);
+  }
+
+  .cashier-right {
+    grid-template-rows: auto minmax(220px, 1fr) auto auto auto;
+    min-height: auto;
+  }
+
+  .cashier-pay-types {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cashier-mix-grid {
     grid-template-columns: 1fr;
   }
 }

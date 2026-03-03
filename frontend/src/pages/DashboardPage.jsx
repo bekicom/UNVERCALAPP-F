@@ -4,6 +4,7 @@ import {
   useCreateExpenseMutation,
   useCreateProductMutation,
   useCreateSupplierMutation,
+  useCreateUserMutation,
   useDeleteExpenseMutation,
   useDeleteProductMutation,
   useDeleteSupplierMutation,
@@ -11,13 +12,16 @@ import {
   useGetExpensesQuery,
   useGetOverviewQuery,
   useGetProductsQuery,
+  useGetSalesQuery,
   useGetSuppliersQuery,
+  useGetUsersQuery,
   useLazyGetSupplierFinanceQuery,
   usePaySupplierDebtMutation,
   useRestockProductMutation,
   useUpdateExpenseMutation,
   useUpdateProductMutation,
-  useUpdateSupplierMutation
+  useUpdateSupplierMutation,
+  useUpdateUserMutation
 } from "../app/api/baseApi";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Topbar } from "../components/layout/Topbar";
@@ -28,27 +32,45 @@ import { RestockModal } from "../components/modals/RestockModal";
 import { SupplierHistoryModal } from "../components/modals/SupplierHistoryModal";
 import { SupplierModal } from "../components/modals/SupplierModal";
 import { SupplierPaymentModal } from "../components/modals/SupplierPaymentModal";
+import { UserModal } from "../components/modals/UserModal";
 import { ExpensesSection } from "../components/sections/ExpensesSection";
 import { PlaceholderSection } from "../components/sections/PlaceholderSection";
 import { ProductsSection } from "../components/sections/ProductsSection";
+import { SalesSection } from "../components/sections/SalesSection";
 import { SuppliersSection } from "../components/sections/SuppliersSection";
+import { UsersSection } from "../components/sections/UsersSection";
 import { getCategoryId, getCategoryName, getSupplierName, getSupplierId, toDateInput } from "../utils/format";
 
 export function DashboardPage({ user, onLogout }) {
   const [activeSection, setActiveSection] = useState("Mahsulotlar");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [salesPeriod, setSalesPeriod] = useState("today");
+  const [salesDateFrom, setSalesDateFrom] = useState("");
+  const [salesDateTo, setSalesDateTo] = useState("");
+
+  const salesQueryArgs = useMemo(() => {
+    const args = { limit: 300 };
+    if (salesPeriod && salesPeriod !== "all") args.period = salesPeriod;
+    if (salesDateFrom) args.from = salesDateFrom;
+    if (salesDateTo) args.to = salesDateTo;
+    return args;
+  }, [salesPeriod, salesDateFrom, salesDateTo]);
 
   const { data: overviewRes, error: overviewError, refetch: refetchOverview } = useGetOverviewQuery();
   const { data: categoriesRes, error: categoriesError, refetch: refetchCategories } = useGetCategoriesQuery();
   const { data: suppliersRes, error: suppliersError, refetch: refetchSuppliers } = useGetSuppliersQuery();
   const { data: productsRes, error: productsError, refetch: refetchProducts } = useGetProductsQuery();
   const { data: expensesRes, error: expensesError, refetch: refetchExpenses } = useGetExpensesQuery();
+  const { data: usersRes, error: usersError, refetch: refetchUsers } = useGetUsersQuery(undefined, { skip: user?.role !== "admin" });
+  const { data: salesRes, error: salesError, isLoading: salesLoading } = useGetSalesQuery(salesQueryArgs, { skip: user?.role !== "admin" });
   const [fetchSupplierFinance] = useLazyGetSupplierFinanceQuery();
 
   const [createCategory, { isLoading: creatingCategory }] = useCreateCategoryMutation();
   const [createSupplier, { isLoading: creatingSupplier }] = useCreateSupplierMutation();
   const [updateSupplier, { isLoading: updatingSupplier }] = useUpdateSupplierMutation();
+  const [createUser, { isLoading: creatingUser }] = useCreateUserMutation();
+  const [updateUser, { isLoading: updatingUser }] = useUpdateUserMutation();
   const [deleteSupplierMutation] = useDeleteSupplierMutation();
   const [createProduct, { isLoading: creatingProduct }] = useCreateProductMutation();
   const [updateProduct, { isLoading: updatingProduct }] = useUpdateProductMutation();
@@ -61,8 +83,18 @@ export function DashboardPage({ user, onLogout }) {
 
   const categories = categoriesRes?.categories || [];
   const suppliers = suppliersRes?.suppliers || [];
+  const users = usersRes?.users || [];
   const products = productsRes?.products || [];
   const expenses = expensesRes?.expenses || [];
+  const sales = salesRes?.sales || [];
+  const salesSummary = salesRes?.summary || {
+    totalSales: 0,
+    totalRevenue: 0,
+    totalCash: 0,
+    totalCard: 0,
+    totalClick: 0,
+    totalProfit: 0
+  };
   const overview = overviewRes || null;
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -72,6 +104,9 @@ export function DashboardPage({ user, onLogout }) {
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const [supplierModalError, setSupplierModalError] = useState("");
   const [supplierForm, setSupplierForm] = useState({ id: "", name: "", address: "", phone: "" });
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [userModalError, setUserModalError] = useState("");
+  const [userForm, setUserForm] = useState({ id: "", username: "", role: "cashier", password: "" });
 
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [expenseModalError, setExpenseModalError] = useState("");
@@ -131,10 +166,10 @@ export function DashboardPage({ user, onLogout }) {
   });
 
   useEffect(() => {
-    const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError]
+    const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError]
       .some((e) => Number(e?.status) === 401);
     if (any401) onLogout();
-  }, [overviewError, categoriesError, suppliersError, productsError, expensesError, onLogout]);
+  }, [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, onLogout]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -159,6 +194,12 @@ export function DashboardPage({ user, onLogout }) {
     );
   }, [expenses, search]);
 
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) => [u.username, u.role].join(" ").toLowerCase().includes(q));
+  }, [users, search]);
+
   const openCategoryModal = () => {
     setCategoryModalError("");
     setCategoryName("");
@@ -181,6 +222,43 @@ export function DashboardPage({ user, onLogout }) {
     setSupplierForm({ id: "", name: "", address: "", phone: "" });
     setSupplierModalError("");
     setSupplierModalOpen(true);
+  };
+
+  const openCreateUserModal = () => {
+    setUserForm({ id: "", username: "", role: "cashier", password: "" });
+    setUserModalError("");
+    setUserModalOpen(true);
+  };
+
+  const openEditUserModal = (u) => {
+    setUserForm({ id: u._id, username: u.username, role: u.role, password: "" });
+    setUserModalError("");
+    setUserModalOpen(true);
+  };
+
+  const saveUser = async (e) => {
+    e.preventDefault();
+    setUserModalError("");
+    try {
+      if (userForm.id) {
+        await updateUser({
+          id: userForm.id,
+          username: userForm.username,
+          role: userForm.role,
+          password: userForm.password
+        }).unwrap();
+      } else {
+        await createUser({
+          username: userForm.username,
+          role: userForm.role,
+          password: userForm.password
+        }).unwrap();
+      }
+      setUserModalOpen(false);
+      await Promise.all([refetchUsers(), refetchOverview()]);
+    } catch (err) {
+      setUserModalError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
   };
 
   const openEditSupplierModal = (s) => {
@@ -462,6 +540,7 @@ export function DashboardPage({ user, onLogout }) {
           openCreateSupplierModal={openCreateSupplierModal}
           openCreateProductModal={openCreateProductModal}
           openCreateExpenseModal={openCreateExpenseModal}
+          openCreateUserModal={openCreateUserModal}
         />
 
         <section className="panel panel-row">
@@ -484,6 +563,22 @@ export function DashboardPage({ user, onLogout }) {
           <SuppliersSection suppliers={filteredSuppliers} onOpenPayment={openSupplierPaymentModal} onOpenHistory={openSupplierHistory} onEdit={openEditSupplierModal} onDelete={deleteSupplier} />
         ) : activeSection === "Xarajatlar" ? (
           <ExpensesSection expenses={filteredExpenses} onEdit={openEditExpenseModal} onDelete={deleteExpense} />
+        ) : activeSection === "Sotuv tarixi" ? (
+          <SalesSection
+            sales={sales}
+            summary={salesSummary}
+            loading={salesLoading}
+            error={salesError}
+            search={search}
+            period={salesPeriod}
+            setPeriod={setSalesPeriod}
+            dateFrom={salesDateFrom}
+            dateTo={salesDateTo}
+            setDateFrom={setSalesDateFrom}
+            setDateTo={setSalesDateTo}
+          />
+        ) : activeSection === "Xodimlar" ? (
+          <UsersSection users={filteredUsers} onEdit={openEditUserModal} />
         ) : (
           <PlaceholderSection />
         )}
@@ -533,6 +628,16 @@ export function DashboardPage({ user, onLogout }) {
         onSubmit={saveSupplier}
         onClose={() => setSupplierModalOpen(false)}
         error={supplierModalError}
+      />
+
+      <UserModal
+        open={userModalOpen}
+        loading={creatingUser || updatingUser}
+        form={userForm}
+        setForm={setUserForm}
+        onSubmit={saveUser}
+        onClose={() => setUserModalOpen(false)}
+        error={userModalError}
       />
 
       <SupplierHistoryModal

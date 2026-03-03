@@ -5,7 +5,8 @@ export function Topbar({
   openCategoryModal,
   openCreateSupplierModal,
   openCreateProductModal,
-  openCreateExpenseModal
+  openCreateExpenseModal,
+  openCreateUserModal
 }) {
   return (
     <header className="topbar">
@@ -19,10 +20,12 @@ export function Topbar({
           </>
         ) : activeSection === "Xarajatlar" ? (
           <button type="button" onClick={openCreateExpenseModal}><Icon name="plus" />Xarajat qo'shish</button>
+        ) : activeSection === "Xodimlar" ? (
+          <button type="button" onClick={openCreateUserModal}><Icon name="plus" />Xodim qo'shish</button>
         ) : activeSection === "Yetkazib beruvchilar" ? (
           <button type="button" onClick={openCreateSupplierModal}><Icon name="plus" />Yetkazib beruvchi</button>
         ) : (
-          <button type="button"><Icon name="plus" />Qo'shish</button>
+          <div />
         )}
       </div>
     </header>

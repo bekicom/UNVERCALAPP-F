@@ -9,6 +9,7 @@ import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
+import salesRoutes from "./routes/salesRoutes.js";
 
 dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)) });
 
@@ -28,6 +29,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/sales", salesRoutes);
 
 initDb().then(() => {
   app.listen(port, () => {

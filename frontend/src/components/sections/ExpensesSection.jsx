@@ -20,12 +20,29 @@ export function ExpensesSection({ expenses, onEdit, onDelete }) {
               <td className="stock">{formatMoney(e.amount)}</td>
               <td>{e.reason}</td>
               <td className="actions-cell">
-                <button type="button" className="action-btn edit" onClick={() => onEdit(e)}><Icon name="edit" />Tahrirlash</button>
-                <button type="button" className="action-btn delete" onClick={() => onDelete(e._id)}><Icon name="trash" />O'chirish</button>
+                <button
+                  type="button"
+                  className="action-btn edit"
+                  onClick={() => onEdit(e)}
+                >
+                  <Icon name="edit" />
+                  edit
+                </button>
+                <button
+                  type="button"
+                  className="action-btn delete"
+                  onClick={() => onDelete(e._id)}
+                >
+                  <Icon name="trash" />
+                </button>
               </td>
             </tr>
           ))}
-          {expenses.length === 0 ? <tr><td colSpan="4">Xarajat topilmadi</td></tr> : null}
+          {expenses.length === 0 ? (
+            <tr>
+              <td colSpan="4">Xarajat topilmadi</td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
     </section>

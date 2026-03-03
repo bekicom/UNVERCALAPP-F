@@ -6,7 +6,7 @@ export function SuppliersSection({
   onOpenPayment,
   onOpenHistory,
   onEdit,
-  onDelete
+  onDelete,
 }) {
   return (
     <section className="table-wrap">
@@ -32,16 +32,45 @@ export function SuppliersSection({
               <td>{formatMoney(s.stats?.totalPaid)}</td>
               <td className="stock">{formatMoney(s.stats?.totalDebt)}</td>
               <td className="actions-cell">
-                <button type="button" className="action-btn money" onClick={() => onOpenPayment(s)} title="To'lovlar">
+                <button
+                  type="button"
+                  className="action-btn money"
+                  onClick={() => onOpenPayment(s)}
+                  title="To'lovlar"
+                >
                   <span className="money-symbol">$</span>
                 </button>
-                <button type="button" className="action-btn" onClick={() => onOpenHistory(s)}><Icon name="history" />Tarix</button>
-                <button type="button" className="action-btn edit" onClick={() => onEdit(s)}><Icon name="edit" />Tahrirlash</button>
-                <button type="button" className="action-btn delete" onClick={() => onDelete(s._id)}><Icon name="trash" />O'chirish</button>
+                <button
+                  type="button"
+                  className="action-btn"
+                  onClick={() => onOpenHistory(s)}
+                >
+                  <Icon name="history" />
+                  Tarix
+                </button>
+                <button
+                  type="button"
+                  className="action-btn edit"
+                  onClick={() => onEdit(s)}
+                >
+                  <Icon name="edit" />
+                  edit
+                </button>
+                <button
+                  type="button"
+                  className="action-btn delete"
+                  onClick={() => onDelete(s._id)}
+                >
+                  <Icon name="trash" />
+                </button>
               </td>
             </tr>
           ))}
-          {suppliers.length === 0 ? <tr><td colSpan="7">Yetkazib beruvchi topilmadi</td></tr> : null}
+          {suppliers.length === 0 ? (
+            <tr>
+              <td colSpan="7">Yetkazib beruvchi topilmadi</td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
     </section>
