@@ -360,6 +360,121 @@ button.ghost {
   color: #fecaca;
 }
 
+.auth-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(540px 320px at 16% 40%, rgba(46, 190, 130, 0.2), transparent 72%),
+    radial-gradient(760px 420px at 86% 86%, rgba(31, 83, 213, 0.16), transparent 78%),
+    linear-gradient(135deg, #131a38 0%, #0d1430 50%, #0b1230 100%);
+}
+
+.auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 45%);
+  pointer-events: none;
+}
+
+.auth-card {
+  width: min(460px, 92vw);
+  padding: 36px 34px 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(145, 161, 204, 0.22);
+  background: linear-gradient(180deg, rgba(37, 45, 77, 0.9), rgba(31, 40, 72, 0.9));
+  box-shadow: 0 18px 44px rgba(3, 7, 20, 0.5), inset 0 0 0 1px rgba(150, 166, 208, 0.04);
+  z-index: 1;
+}
+
+.auth-card h1 {
+  margin: 0;
+  text-align: center;
+  color: #eaf0ff;
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+}
+
+.auth-title-line {
+  width: 58px;
+  height: 4px;
+  border-radius: 999px;
+  display: block;
+  margin: 8px auto 18px;
+  background: linear-gradient(90deg, #1dbf73, #24d38d);
+}
+
+.auth-form {
+  margin-top: 0;
+  gap: 14px;
+}
+
+.auth-form label {
+  display: block;
+}
+
+.auth-form input {
+  min-height: 54px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 131, 165, 0.2);
+  background: rgba(74, 83, 113, 0.55);
+  color: #eef3ff;
+  font-size: 24px;
+  padding: 12px 14px;
+}
+
+.auth-form input::placeholder {
+  color: rgba(225, 231, 255, 0.72);
+}
+
+.auth-form button {
+  margin-top: 8px;
+  width: 100%;
+  min-height: 56px;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1dbf73, #10a860);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 10px 28px rgba(28, 185, 110, 0.32);
+}
+
+.auth-form .error-text {
+  margin: 2px 2px 0;
+  font-size: 18px;
+  color: #ffd7e4;
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    width: min(440px, 92vw);
+    padding: 30px 20px 22px;
+  }
+
+  .auth-card h1 {
+    font-size: 30px;
+  }
+
+  .auth-form input {
+    min-height: 48px;
+    font-size: 20px;
+    padding: 12px 14px;
+  }
+
+  .auth-form button {
+    min-height: 50px;
+    font-size: 22px;
+  }
+
+  .auth-form .error-text {
+    font-size: 16px;
+  }
+}
+
 .dashboard-page {
   width: 100%;
   min-height: 100vh;
