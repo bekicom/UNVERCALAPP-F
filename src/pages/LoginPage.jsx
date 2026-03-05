@@ -21,7 +21,7 @@ export function LoginPage({ onLogin }) {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <p className="badge">UY-DOKON</p>
+        <p className="badge">UNVERCALAPP</p>
         <h1>Tizimga Kirish</h1>
         <p className="hint">Admin yoki kassir hisobingiz bilan kiring.</p>
         <form onSubmit={handleSubmit} className="auth-form">

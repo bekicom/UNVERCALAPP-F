@@ -34,7 +34,7 @@ function paymentLabel(value) {
 }
 
 function openPrintCheck(sale, settings) {
-  const receiptTitle = settings?.receipt?.title || "UY-DOKON CHEK";
+  const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
   const logoUrl = settings?.receipt?.logoUrl || "";
   const rows = (sale?.items || []).map((it) => `

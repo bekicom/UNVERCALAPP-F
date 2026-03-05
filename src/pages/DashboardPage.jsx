@@ -174,7 +174,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const settings = settingsRes?.settings || {
     lowStockThreshold: 5,
     keyboardEnabled: true,
-    receipt: { title: "UY-DOKON CHEK", footer: "Xaridingiz uchun rahmat!", logoUrl: "" }
+    receipt: { title: "CHEK", footer: "Xaridingiz uchun rahmat!", logoUrl: "" }
   };
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
