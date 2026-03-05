@@ -29,6 +29,17 @@ export function SettingsSection({
             />
           </div>
           <div className="settings-row">
+            <p>USD kursi (1$ = so'm)</p>
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              value={form.usdRate}
+              onChange={(e) => setForm((p) => ({ ...p, usdRate: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="settings-row">
             <label className="settings-toggle-label">
               <input
                 type="checkbox"

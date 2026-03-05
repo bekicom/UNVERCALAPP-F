@@ -173,6 +173,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const overview = overviewRes || null;
   const settings = settingsRes?.settings || {
     lowStockThreshold: 5,
+    usdRate: 12171,
     keyboardEnabled: true,
     receipt: { title: "CHEK", footer: "Xaridingiz uchun rahmat!", logoUrl: "" }
   };
@@ -227,6 +228,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     categoryId: "",
     supplierId: "",
     purchasePrice: "",
+    priceCurrency: "uzs",
     retailPrice: "",
     wholesalePrice: "",
     paymentType: "naqd",
@@ -246,6 +248,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     supplierId: "",
     quantity: "",
     purchasePrice: "",
+    priceCurrency: "uzs",
     pricingMode: "keep_old",
     retailPrice: "",
     wholesalePrice: "",
@@ -256,6 +259,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [settingsErrorMsg, setSettingsErrorMsg] = useState("");
   const [settingsForm, setSettingsForm] = useState({
     lowStockThreshold: "5",
+    usdRate: "12171",
     keyboardEnabled: true,
     receipt: { title: "", footer: "", logoUrl: "" }
   });
@@ -264,6 +268,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     if (!settingsRes?.settings) return;
     setSettingsForm({
       lowStockThreshold: String(settingsRes.settings.lowStockThreshold ?? 5),
+      usdRate: String(settingsRes.settings.usdRate ?? 12171),
       keyboardEnabled: Boolean(settingsRes.settings.keyboardEnabled),
       receipt: {
         title: settingsRes.settings.receipt?.title || "",
@@ -563,6 +568,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     try {
       await updateSettings({
         lowStockThreshold: Number(settingsForm.lowStockThreshold || 0),
+        usdRate: Number(settingsForm.usdRate || 0),
         keyboardEnabled: Boolean(settingsForm.keyboardEnabled),
         receipt: {
           title: settingsForm.receipt.title,
@@ -576,6 +582,17 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     }
   };
 
+  const toCurrencyInput = (amount, currency) => {
+    const numeric = Number(amount || 0);
+    if (!Number.isFinite(numeric)) return "";
+    if (currency === "usd") {
+      const rate = Number(settings.usdRate || 12171);
+      const usd = rate > 0 ? numeric / rate : 0;
+      return String(Math.round(usd * 100) / 100);
+    }
+    return String(Math.round(numeric * 100) / 100);
+  };
+
   const openCreateProductModal = () => {
     setProductForm({
       id: "",
@@ -584,6 +601,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
       categoryId: categories[0]?._id || "",
       supplierId: suppliers[0]?._id || "",
       purchasePrice: "",
+      priceCurrency: "uzs",
       retailPrice: "",
       wholesalePrice: "",
       paymentType: "naqd",
@@ -600,23 +618,25 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   };
 
   const openEditProductModal = (p) => {
+    const priceCurrency = p.priceCurrency || "uzs";
     setProductForm({
       id: p._id,
       name: p.name,
       model: p.model,
       categoryId: getCategoryId(p),
       supplierId: getSupplierId(p),
-      purchasePrice: String(p.purchasePrice ?? ""),
-      retailPrice: String(p.retailPrice ?? ""),
-      wholesalePrice: String(p.wholesalePrice ?? ""),
+      purchasePrice: toCurrencyInput(p.purchasePrice, priceCurrency),
+      priceCurrency,
+      retailPrice: toCurrencyInput(p.retailPrice, priceCurrency),
+      wholesalePrice: toCurrencyInput(p.wholesalePrice, priceCurrency),
       paymentType: p.paymentType || "naqd",
-      paidAmount: String(p.paidAmount ?? ""),
+      paidAmount: toCurrencyInput(p.paidAmount, priceCurrency),
       quantity: String(p.quantity ?? ""),
       unit: p.unit || "dona",
       allowPieceSale: Boolean(p.allowPieceSale),
       pieceUnit: String(p.pieceUnit || "kg").toLowerCase(),
       pieceQtyPerBase: String(p.pieceQtyPerBase ?? ""),
-      piecePrice: String(p.piecePrice ?? "")
+      piecePrice: toCurrencyInput(p.piecePrice, priceCurrency)
     });
     setProductModalError("");
     setProductModalOpen(true);
@@ -632,6 +652,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         categoryId: productForm.categoryId,
         supplierId: productForm.supplierId,
         purchasePrice: Number(productForm.purchasePrice),
+        priceCurrency: productForm.priceCurrency,
         retailPrice: Number(productForm.retailPrice),
         wholesalePrice: Number(productForm.wholesalePrice),
         paymentType: productForm.paymentType,
@@ -665,16 +686,18 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   };
 
   const openRestockModal = (product) => {
+    const priceCurrency = product.priceCurrency || "uzs";
     setRestockTarget(product);
     setRestockModalError("");
     setRestockForm({
       supplierId: getSupplierId(product),
       quantity: "",
-      purchasePrice: String(product.purchasePrice || ""),
+      purchasePrice: toCurrencyInput(product.purchasePrice, priceCurrency),
+      priceCurrency,
       pricingMode: "keep_old",
-      retailPrice: String(product.retailPrice || ""),
-      wholesalePrice: String(product.wholesalePrice || ""),
-      piecePrice: String(product.piecePrice || ""),
+      retailPrice: toCurrencyInput(product.retailPrice, priceCurrency),
+      wholesalePrice: toCurrencyInput(product.wholesalePrice, priceCurrency),
+      piecePrice: toCurrencyInput(product.piecePrice, priceCurrency),
       paymentType: "naqd",
       paidAmount: ""
     });
@@ -691,6 +714,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         supplierId: restockForm.supplierId,
         quantity: Number(restockForm.quantity),
         purchasePrice: Number(restockForm.purchasePrice),
+        priceCurrency: restockForm.priceCurrency,
         pricingMode: restockForm.pricingMode,
         retailPrice: Number(restockForm.retailPrice),
         wholesalePrice: Number(restockForm.wholesalePrice),
@@ -777,6 +801,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             onReset={() =>
               setSettingsForm({
                 lowStockThreshold: String(settings.lowStockThreshold ?? 5),
+                usdRate: String(settings.usdRate ?? 12171),
                 keyboardEnabled: Boolean(settings.keyboardEnabled),
                 receipt: {
                   title: settings.receipt?.title || "",
@@ -858,6 +883,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         error={productModalError}
         categories={categories}
         suppliers={suppliers}
+        usdRate={Number(settings.usdRate || 12171)}
         openCreateSupplierModal={openCreateSupplierModal}
       />
 
@@ -917,6 +943,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         error={restockModalError}
         suppliers={suppliers}
         product={restockTarget}
+        usdRate={Number(settings.usdRate || 12171)}
       />
       <CustomerDebtModal
         open={customerDebtOpen}

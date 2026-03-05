@@ -11,6 +11,7 @@ export function ProductModal({
   error,
   categories,
   suppliers,
+  usdRate = 12171,
   openCreateSupplierModal,
 }) {
   if (!open) return null;
@@ -19,10 +20,14 @@ export function ProductModal({
   const suggestedPiecePrice = pieceQty > 0 ? Math.round(retail / pieceQty) : 0;
   const totalPurchaseCost =
     (Number(form.purchasePrice) || 0) * (Number(form.quantity) || 0);
+  const totalPurchaseCostUzs =
+    (form.priceCurrency === "usd" ? totalPurchaseCost * Number(usdRate || 0) : totalPurchaseCost);
   const debtAmount = Math.max(
     0,
     totalPurchaseCost - (Number(form.paidAmount) || 0),
   );
+  const debtAmountUzs =
+    (form.priceCurrency === "usd" ? debtAmount * Number(usdRate || 0) : debtAmount);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -131,6 +136,16 @@ export function ProductModal({
 
           <p className="modal-subtitle">Narxlar</p>
           <label>
+            Valyuta
+            <select
+              value={form.priceCurrency || "uzs"}
+              onChange={(e) => setForm((p) => ({ ...p, priceCurrency: e.target.value }))}
+            >
+              <option value="uzs">So'm</option>
+              <option value="usd">USD ($)</option>
+            </select>
+          </label>
+          <label>
             Kelish narxi
             <input
               type="number"
@@ -210,9 +225,17 @@ export function ProductModal({
             </label>
           ) : null}
           <p className="hint">
-            Umumiy kelish summasi: {formatMoney(totalPurchaseCost)} so'm
+            Umumiy kelish summasi: {formatMoney(totalPurchaseCost)} {form.priceCurrency === "usd" ? "$" : "so'm"}
           </p>
-          <p className="hint">Joriy qarz: {formatMoney(debtAmount)} so'm</p>
+          {form.priceCurrency === "usd" ? (
+            <p className="hint">So'mda: {formatMoney(totalPurchaseCostUzs)} so'm</p>
+          ) : null}
+          <p className="hint">
+            Joriy qarz: {formatMoney(debtAmount)} {form.priceCurrency === "usd" ? "$" : "so'm"}
+          </p>
+          {form.priceCurrency === "usd" ? (
+            <p className="hint">Qarz so'mda: {formatMoney(debtAmountUzs)} so'm</p>
+          ) : null}
           {form.unit === "qop" ? (
             <div className="piece-box">
               <label className="check-line">
@@ -244,7 +267,7 @@ export function ProductModal({
                     />
                   </label>
                   <p className="hint">
-                    Tavsiya (qop narxidan): {suggestedPiecePrice || 0} so'm/
+                    Tavsiya (qop narxidan): {suggestedPiecePrice || 0} {form.priceCurrency === "usd" ? "$" : "so'm"}/
                     {form.pieceUnit}
                   </p>
                   <label>
