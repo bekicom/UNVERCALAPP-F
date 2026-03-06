@@ -67,9 +67,10 @@ function openPrintCheck(sale, settings) {
           .paper { background: #f3f3f4; border: 1px solid #d6d7db; border-radius: 8px; padding: 12px; box-sizing: border-box; }
           h3 { margin: 0 0 14px; text-align: center; font-size: 18px; letter-spacing: 0.8px; }
           table { width: 100%; border-collapse: collapse; margin-top: 6px; table-layout: fixed; }
-          th, td { border-bottom: 1px solid #c8cad0; text-align: left; padding: 6px 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          th:nth-child(1), td:nth-child(1) { width: 42%; }
-          th:nth-child(2), td:nth-child(2) { width: 18%; }
+          th, td { border-bottom: 1px solid #c8cad0; text-align: left; padding: 6px 0; font-size: 12px; }
+          th:nth-child(1), td:nth-child(1) { width: 46%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          th:nth-child(2), td:nth-child(2) { width: 14%; text-align: right; }
+          th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { width: 20%; text-align: right; }
           .sep { border-bottom: 1px solid #c8cad0; margin: 10px 0; }
           .total { margin-top: 8px; font-weight: 700; font-size: 20px; line-height: 1.15; }
           .footer { margin-top: 8px; font-size: 13px; text-align: center; }

@@ -257,21 +257,30 @@
   text-align: left;
   border-bottom: 1px solid #c8cad0;
   padding: 6px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   background: transparent !important;
   color: #2a2d33 !important;
 }
 
 .receipt-preview-paper th:first-child,
 .receipt-preview-paper td:first-child {
-  width: 42%;
+  width: 46%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .receipt-preview-paper th:nth-child(2),
 .receipt-preview-paper td:nth-child(2) {
-  width: 18%;
+  width: 14%;
+  text-align: right;
+}
+
+.receipt-preview-paper th:nth-child(3),
+.receipt-preview-paper td:nth-child(3),
+.receipt-preview-paper th:nth-child(4),
+.receipt-preview-paper td:nth-child(4) {
+  width: 20%;
+  text-align: right;
 }
 
 .receipt-preview-paper strong {
