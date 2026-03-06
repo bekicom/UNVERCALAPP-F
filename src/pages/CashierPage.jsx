@@ -37,12 +37,22 @@ function openPrintCheck(sale, settings) {
   const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
   const logoUrl = settings?.receipt?.logoUrl || "";
+  const receiptFields = settings?.receipt?.fields || {};
+  const showDate = receiptFields.showDate !== false;
+  const showCashier = receiptFields.showCashier !== false;
+  const showPaymentType = receiptFields.showPaymentType !== false;
+  const showCustomer = receiptFields.showCustomer !== false;
+  const showItemsTable = receiptFields.showItemsTable !== false;
+  const showItemUnitPrice = receiptFields.showItemUnitPrice !== false;
+  const showItemLineTotal = receiptFields.showItemLineTotal !== false;
+  const showTotal = receiptFields.showTotal !== false;
+  const showFooter = receiptFields.showFooter !== false;
   const rows = (sale?.items || []).map((it) => `
     <tr>
       <td>${it.productName}</td>
       <td>${it.quantity} ${it.unit}</td>
-      <td>${formatMoney(it.unitPrice)}</td>
-      <td>${formatMoney(it.lineTotal)}</td>
+      ${showItemUnitPrice ? `<td>${formatMoney(it.unitPrice)}</td>` : ""}
+      ${showItemLineTotal ? `<td>${formatMoney(it.lineTotal)}</td>` : ""}
     </tr>
   `).join("");
 
@@ -61,18 +71,23 @@ function openPrintCheck(sale, settings) {
       <body>
         ${logoUrl ? `<div><img src="${logoUrl}" alt="logo" style="max-height:56px; max-width:200px; object-fit:contain;" /></div>` : ""}
         <h3>${receiptTitle}</h3>
-        <div>Sana: ${formatSaleTime(sale?.createdAt)}</div>
-        <div>Kassir: ${sale?.cashierUsername || "-"}</div>
-        <div>To'lov: ${paymentLabel(sale?.paymentType)}</div>
-        ${sale?.customerName ? `<div>Mijoz: ${sale.customerName} (${sale.customerPhone || "-"})</div>` : ""}
-        <table>
+        ${showDate ? `<div>Sana: ${formatSaleTime(sale?.createdAt)}</div>` : ""}
+        ${showCashier ? `<div>Kassir: ${sale?.cashierUsername || "-"}</div>` : ""}
+        ${showPaymentType ? `<div>To'lov: ${paymentLabel(sale?.paymentType)}</div>` : ""}
+        ${showCustomer && sale?.customerName ? `<div>Mijoz: ${sale.customerName} (${sale.customerPhone || "-"})</div>` : ""}
+        ${showItemsTable ? `<table>
           <thead>
-            <tr><th>Mahsulot</th><th>Miqdor</th><th>Narx</th><th>Summa</th></tr>
+            <tr>
+              <th>Mahsulot</th>
+              <th>Miqdor</th>
+              ${showItemUnitPrice ? "<th>Narx</th>" : ""}
+              ${showItemLineTotal ? "<th>Summa</th>" : ""}
+            </tr>
           </thead>
           <tbody>${rows}</tbody>
-        </table>
-        <div class="total">Jami: ${formatMoney(sale?.totalAmount || 0)} so'm</div>
-        <div style="margin-top:8px; font-size:12px;">${receiptFooter}</div>
+        </table>` : ""}
+        ${showTotal ? `<div class="total">Jami: ${formatMoney(sale?.totalAmount || 0)} so'm</div>` : ""}
+        ${showFooter ? `<div style="margin-top:8px; font-size:12px;">${receiptFooter}</div>` : ""}
       </body>
     </html>
   `;

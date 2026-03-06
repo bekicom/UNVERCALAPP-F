@@ -175,7 +175,22 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     lowStockThreshold: 5,
     usdRate: 12171,
     keyboardEnabled: true,
-    receipt: { title: "CHEK", footer: "Xaridingiz uchun rahmat!", logoUrl: "" }
+    receipt: {
+      title: "CHEK",
+      footer: "Xaridingiz uchun rahmat!",
+      logoUrl: "",
+      fields: {
+        showDate: true,
+        showCashier: true,
+        showPaymentType: true,
+        showCustomer: true,
+        showItemsTable: true,
+        showItemUnitPrice: true,
+        showItemLineTotal: true,
+        showTotal: true,
+        showFooter: true
+      }
+    }
   };
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -261,7 +276,22 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     lowStockThreshold: "5",
     usdRate: "12171",
     keyboardEnabled: true,
-    receipt: { title: "", footer: "", logoUrl: "" }
+    receipt: {
+      title: "",
+      footer: "",
+      logoUrl: "",
+      fields: {
+        showDate: true,
+        showCashier: true,
+        showPaymentType: true,
+        showCustomer: true,
+        showItemsTable: true,
+        showItemUnitPrice: true,
+        showItemLineTotal: true,
+        showTotal: true,
+        showFooter: true
+      }
+    }
   });
 
   useEffect(() => {
@@ -273,7 +303,18 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
       receipt: {
         title: settingsRes.settings.receipt?.title || "",
         footer: settingsRes.settings.receipt?.footer || "",
-        logoUrl: settingsRes.settings.receipt?.logoUrl || ""
+        logoUrl: settingsRes.settings.receipt?.logoUrl || "",
+        fields: {
+          showDate: settingsRes.settings.receipt?.fields?.showDate !== false,
+          showCashier: settingsRes.settings.receipt?.fields?.showCashier !== false,
+          showPaymentType: settingsRes.settings.receipt?.fields?.showPaymentType !== false,
+          showCustomer: settingsRes.settings.receipt?.fields?.showCustomer !== false,
+          showItemsTable: settingsRes.settings.receipt?.fields?.showItemsTable !== false,
+          showItemUnitPrice: settingsRes.settings.receipt?.fields?.showItemUnitPrice !== false,
+          showItemLineTotal: settingsRes.settings.receipt?.fields?.showItemLineTotal !== false,
+          showTotal: settingsRes.settings.receipt?.fields?.showTotal !== false,
+          showFooter: settingsRes.settings.receipt?.fields?.showFooter !== false
+        }
       }
     });
   }, [settingsRes]);
@@ -573,7 +614,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         receipt: {
           title: settingsForm.receipt.title,
           footer: settingsForm.receipt.footer,
-          logoUrl: settingsForm.receipt.logoUrl
+          logoUrl: settingsForm.receipt.logoUrl,
+          fields: settingsForm.receipt.fields
         }
       }).unwrap();
       await Promise.all([refetchSettings(), refetchProducts()]);
@@ -806,7 +848,18 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
                 receipt: {
                   title: settings.receipt?.title || "",
                   footer: settings.receipt?.footer || "",
-                  logoUrl: settings.receipt?.logoUrl || ""
+                  logoUrl: settings.receipt?.logoUrl || "",
+                  fields: {
+                    showDate: settings.receipt?.fields?.showDate !== false,
+                    showCashier: settings.receipt?.fields?.showCashier !== false,
+                    showPaymentType: settings.receipt?.fields?.showPaymentType !== false,
+                    showCustomer: settings.receipt?.fields?.showCustomer !== false,
+                    showItemsTable: settings.receipt?.fields?.showItemsTable !== false,
+                    showItemUnitPrice: settings.receipt?.fields?.showItemUnitPrice !== false,
+                    showItemLineTotal: settings.receipt?.fields?.showItemLineTotal !== false,
+                    showTotal: settings.receipt?.fields?.showTotal !== false,
+                    showFooter: settings.receipt?.fields?.showFooter !== false
+                  }
                 }
               })
             }
