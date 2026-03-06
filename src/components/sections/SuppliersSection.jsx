@@ -8,6 +8,12 @@ export function SuppliersSection({
   onEdit,
   onDelete,
 }) {
+  const fmtWithUsd = (uzs, usd) => {
+    const usdNum = Number(usd || 0);
+    if (!Number.isFinite(usdNum) || usdNum <= 0) return formatMoney(uzs);
+    return `${formatMoney(uzs)} (${formatMoney(usdNum)}$)`;
+  };
+
   return (
     <section className="table-wrap">
       <table>
@@ -28,9 +34,9 @@ export function SuppliersSection({
               <td>{s.name}</td>
               <td>{s.address || "-"}</td>
               <td>{s.phone || "-"}</td>
-              <td>{formatMoney(s.stats?.totalPurchase)}</td>
-              <td>{formatMoney(s.stats?.totalPaid)}</td>
-              <td className="stock">{formatMoney(s.stats?.totalDebt)}</td>
+              <td>{fmtWithUsd(s.stats?.totalPurchase, s.stats?.totalPurchaseUsd)}</td>
+              <td>{fmtWithUsd(s.stats?.totalPaid, s.stats?.totalPaidUsd)}</td>
+              <td className="stock">{fmtWithUsd(s.stats?.totalDebt, s.stats?.totalDebtUsd)}</td>
               <td className="actions-cell">
                 <button
                   type="button"

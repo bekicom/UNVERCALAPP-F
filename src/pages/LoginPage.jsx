@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLoginMutation } from "../app/api/baseApi";
 
 export function LoginPage({ onLogin }) {
+  const [tenantSlug, setTenantSlug] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,7 +12,7 @@ export function LoginPage({ onLogin }) {
     e.preventDefault();
     setError("");
     try {
-      const data = await loginMutation({ username, password }).unwrap();
+      const data = await loginMutation({ tenantSlug, username, password }).unwrap();
       onLogin(data.token, data.user);
     } catch (err) {
       setError(err?.data?.message || err?.message || "Xatolik yuz berdi");
@@ -24,6 +25,9 @@ export function LoginPage({ onLogin }) {
         <h1>Login</h1>
         <span className="auth-title-line" />
         <form onSubmit={handleSubmit} className="auth-form">
+          <label>
+            <input value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} placeholder="Filial kodi (ixtiyoriy)" />
+          </label>
           <label>
             <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
           </label>

@@ -7,6 +7,15 @@ import {
 } from "../../utils/format";
 
 export function ProductsSection({ products, lowStockThreshold = 0, onRestock, onEdit, onDelete }) {
+  const formatProductPrice = (product, value) => {
+    const amount = Number(value || 0);
+    const isUsd = String(product?.priceCurrency || "uzs").toLowerCase() === "usd";
+    const rate = Number(product?.usdRateUsed || 0);
+    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(amount);
+    const usd = amount / rate;
+    return `${formatMoney(amount)} (${formatMoney(usd)}$)`;
+  };
+
   return (
     <section className="table-wrap products-table-wrap">
       <table>
@@ -33,15 +42,15 @@ export function ProductsSection({ products, lowStockThreshold = 0, onRestock, on
               <td>{p.model}</td>
               <td>{getCategoryName(p)}</td>
               <td>{getSupplierName(p)}</td>
-              <td>{formatMoney(p.purchasePrice)}</td>
-              <td>{formatMoney(p.retailPrice)}</td>
-              <td>{formatMoney(p.wholesalePrice)}</td>
+              <td>{formatProductPrice(p, p.purchasePrice)}</td>
+              <td>{formatProductPrice(p, p.retailPrice)}</td>
+              <td>{formatProductPrice(p, p.wholesalePrice)}</td>
               <td>
                 {p.paymentType || "naqd"} / {formatMoney(p.debtAmount)}
               </td>
               <td>
                 {p.unit === "qop" && p.allowPieceSale
-                  ? `1 qop = ${p.pieceQtyPerBase} ${p.pieceUnit}, 1 ${p.pieceUnit} = ${formatMoney(p.piecePrice)}`
+                  ? `1 qop = ${p.pieceQtyPerBase} ${p.pieceUnit}, 1 ${p.pieceUnit} = ${formatProductPrice(p, p.piecePrice)}`
                   : "-"}
               </td>
               <td className={Number(p.quantity || 0) <= Number(lowStockThreshold || 0) ? "stock" : ""}>{p.quantity}</td>
