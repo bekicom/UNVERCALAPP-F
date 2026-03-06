@@ -1,8 +1,11 @@
 import { createContext, useContext, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
+import { baseApi } from "../app/api/baseApi";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const dispatch = useDispatch();
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(() => {
     const raw = localStorage.getItem("user");
@@ -10,6 +13,8 @@ export function AuthProvider({ children }) {
   });
 
   const login = (nextToken, nextUser) => {
+    // Tenant/user almashganda eski query cache qolib ketmasin.
+    dispatch(baseApi.util.resetApiState());
     localStorage.setItem("token", nextToken);
     localStorage.setItem("user", JSON.stringify(nextUser));
     setToken(nextToken);
@@ -17,6 +22,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    dispatch(baseApi.util.resetApiState());
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken("");
