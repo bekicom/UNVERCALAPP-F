@@ -63,22 +63,27 @@ function openPrintCheck(sale, settings) {
         <style>
           @page { size: 80mm auto; margin: 4mm; }
           html, body { width: 80mm; margin: 0; padding: 0; }
-          body { font-family: Arial, sans-serif; padding: 0; font-size: 12px; }
-          h3 { margin: 0 0 8px; text-align: center; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed; }
-          th, td { border-bottom: 1px solid #ddd; text-align: left; padding: 5px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          body { font-family: Arial, sans-serif; padding: 0; font-size: 13px; color: #24262b; background: #f3f3f4; }
+          .paper { background: #f3f3f4; border: 1px solid #d6d7db; border-radius: 8px; padding: 12px; box-sizing: border-box; }
+          h3 { margin: 0 0 14px; text-align: center; font-size: 18px; letter-spacing: 0.8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 6px; table-layout: fixed; }
+          th, td { border-bottom: 1px solid #c8cad0; text-align: left; padding: 6px 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           th:nth-child(1), td:nth-child(1) { width: 42%; }
           th:nth-child(2), td:nth-child(2) { width: 18%; }
-          .total { margin-top: 10px; font-weight: bold; font-size: 14px; }
+          .sep { border-bottom: 1px solid #c8cad0; margin: 10px 0; }
+          .total { margin-top: 8px; font-weight: 700; font-size: 20px; line-height: 1.15; }
+          .footer { margin-top: 8px; font-size: 13px; text-align: center; }
         </style>
       </head>
       <body>
+        <div class="paper">
         ${logoUrl ? `<div><img src="${logoUrl}" alt="logo" style="max-height:56px; max-width:200px; object-fit:contain;" /></div>` : ""}
         <h3>${receiptTitle}</h3>
         ${showDate ? `<div>Sana: ${formatSaleTime(sale?.createdAt)}</div>` : ""}
         ${showCashier ? `<div>Kassir: ${sale?.cashierUsername || "-"}</div>` : ""}
         ${showPaymentType ? `<div>To'lov: ${paymentLabel(sale?.paymentType)}</div>` : ""}
         ${showCustomer && sale?.customerName ? `<div>Mijoz: ${sale.customerName} (${sale.customerPhone || "-"})</div>` : ""}
+        <div class="sep"></div>
         ${showItemsTable ? `<table>
           <thead>
             <tr>
@@ -90,8 +95,11 @@ function openPrintCheck(sale, settings) {
           </thead>
           <tbody>${rows}</tbody>
         </table>` : ""}
+        <div class="sep"></div>
         ${showTotal ? `<div class="total">Jami: ${formatMoney(sale?.totalAmount || 0)} so'm</div>` : ""}
-        ${showFooter ? `<div style="margin-top:8px; font-size:12px;">${receiptFooter}</div>` : ""}
+        <div class="sep"></div>
+        ${showFooter ? `<div class="footer">${receiptFooter}</div>` : ""}
+        </div>
       </body>
     </html>
   `;

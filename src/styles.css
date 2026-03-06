@@ -220,43 +220,48 @@
 }
 
 .receipt-preview-paper {
-  background: #fff;
-  color: #0f172a;
+  background: #f3f3f4;
+  color: #24262b;
   border-radius: 10px;
   width: 80mm;
   max-width: 100%;
-  padding: 12px;
-  border: 1px solid #dbe2ee;
+  padding: 14px;
+  border: 1px solid #d6d7db;
   overflow: hidden;
 }
 
 .receipt-preview-paper h5 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 0 0 14px;
+  font-size: 24px;
+  letter-spacing: 0.8px;
   text-align: center;
 }
 
 .receipt-preview-paper p {
   margin: 4px 0;
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .receipt-preview-paper table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 8px;
+  margin-top: 6px;
   table-layout: fixed;
+  background: transparent !important;
 }
 
 .receipt-preview-paper th,
 .receipt-preview-paper td {
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 4px 2px;
+  border-bottom: 1px solid #c8cad0;
+  padding: 6px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: transparent !important;
+  color: #2a2d33 !important;
 }
 
 .receipt-preview-paper th:first-child,
@@ -272,7 +277,19 @@
 .receipt-preview-paper strong {
   display: block;
   margin-top: 8px;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.receipt-preview-sep {
+  border-bottom: 1px solid #c8cad0;
+  margin: 10px 0;
+}
+
+.receipt-preview-footer {
+  text-align: center;
   font-size: 14px;
+  margin-top: 8px !important;
 }
 
 .receipt-preview-logo {

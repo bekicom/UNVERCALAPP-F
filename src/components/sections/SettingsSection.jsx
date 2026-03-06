@@ -35,8 +35,8 @@ export function SettingsSection({
   };
 
   const sampleRows = [
-    { name: "Coca-Cola 1.5L", qty: "2 dona", price: "11 000", total: "22 000" },
-    { name: "Fanta 1L", qty: "1 dona", price: "9 500", total: "9 500" }
+    { name: "Coca-Cola 1.5L", qty: "2x", price: "12 000", total: "24 000" },
+    { name: "Fanta 1L", qty: "1x", price: "7 500", total: "7 500" }
   ];
 
   return (
@@ -147,7 +147,7 @@ export function SettingsSection({
               {fields.showCashier !== false ? <p>Kassir: admin</p> : null}
               {fields.showPaymentType !== false ? <p>To'lov: Naqd</p> : null}
               {fields.showCustomer !== false ? <p>Mijoz: Test mijoz (+99890...)</p> : null}
-
+              <div className="receipt-preview-sep" />
               {fields.showItemsTable !== false ? (
                 <table>
                   <thead>
@@ -170,8 +170,10 @@ export function SettingsSection({
                   </tbody>
                 </table>
               ) : null}
+              <div className="receipt-preview-sep" />
               {fields.showTotal !== false ? <strong>Jami: 31 500 so'm</strong> : null}
-              {fields.showFooter !== false ? <p>{form.receipt.footer || "Xaridingiz uchun rahmat!"}</p> : null}
+              <div className="receipt-preview-sep" />
+              {fields.showFooter !== false ? <p className="receipt-preview-footer">{form.receipt.footer || "Xaridingiz uchun rahmat!"}</p> : null}
             </div>
           </div>
         </section>
