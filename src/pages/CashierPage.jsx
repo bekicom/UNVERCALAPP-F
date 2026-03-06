@@ -61,11 +61,15 @@ function openPrintCheck(sale, settings) {
       <head>
         <title>Chek</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 12px; }
-          h3 { margin: 0 0 8px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-          th, td { border-bottom: 1px solid #ddd; text-align: left; padding: 6px 4px; font-size: 12px; }
-          .total { margin-top: 10px; font-weight: bold; font-size: 16px; }
+          @page { size: 80mm auto; margin: 4mm; }
+          html, body { width: 80mm; margin: 0; padding: 0; }
+          body { font-family: Arial, sans-serif; padding: 0; font-size: 12px; }
+          h3 { margin: 0 0 8px; text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed; }
+          th, td { border-bottom: 1px solid #ddd; text-align: left; padding: 5px 2px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          th:nth-child(1), td:nth-child(1) { width: 42%; }
+          th:nth-child(2), td:nth-child(2) { width: 18%; }
+          .total { margin-top: 10px; font-weight: bold; font-size: 14px; }
         </style>
       </head>
       <body>

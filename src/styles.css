@@ -223,9 +223,11 @@
   background: #fff;
   color: #0f172a;
   border-radius: 10px;
-  max-width: 380px;
+  width: 80mm;
+  max-width: 100%;
   padding: 12px;
   border: 1px solid #dbe2ee;
+  overflow: hidden;
 }
 
 .receipt-preview-paper h5 {
@@ -243,6 +245,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
+  table-layout: fixed;
 }
 
 .receipt-preview-paper th,
@@ -251,6 +254,19 @@
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
   padding: 4px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.receipt-preview-paper th:first-child,
+.receipt-preview-paper td:first-child {
+  width: 42%;
+}
+
+.receipt-preview-paper th:nth-child(2),
+.receipt-preview-paper td:nth-child(2) {
+  width: 18%;
 }
 
 .receipt-preview-paper strong {
