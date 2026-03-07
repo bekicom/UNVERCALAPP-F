@@ -2074,6 +2074,10 @@ th {
   gap: 10px;
 }
 
+.homex-mid > .homex-panel {
+  min-width: 0;
+}
+
 .homex-wrap.v2 .homex-panel {
   background: linear-gradient(165deg, rgba(17, 34, 72, 0.95), rgba(10, 24, 53, 0.95));
   border: 1px solid rgba(120, 153, 201, 0.25);
@@ -3091,18 +3095,24 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .salesx-cards {
-    grid-template-columns: repeat(4, minmax(110px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .salesx-card {
-    min-height: 74px;
-    padding: 8px 10px;
+    min-height: 52px;
+    padding: 6px 7px;
   }
 
   .salesx-card strong {
-    margin-top: 6px;
-    font-size: 20px;
+    margin-top: 3px;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .salesx-card p {
+    font-size: 10px;
+    line-height: 1.15;
   }
 
   .salesx-pay-badge,
@@ -3126,7 +3136,8 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .homex-kpis.v2 {
-    grid-template-columns: repeat(5, minmax(100px, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .homex-kpis.v2 .homex-kpi,
@@ -3135,13 +3146,40 @@ html[data-theme="light"] .touchkbd-card {
     padding: 8px;
   }
 
+  .homex-kpis.v2 .homex-kpi {
+    min-height: 56px;
+    padding: 6px 7px;
+  }
+
+  .homex-kpi-title {
+    gap: 4px;
+  }
+
+  .homex-kpi-title .icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .homex-kpis.v2 .homex-kpi .homex-kpi-title,
+  .homex-kpis.v2 .homex-kpi small,
+  .homex-kpis.v2 .homex-kpi span {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
   .homex-kpis.v2 .homex-kpi strong {
-    font-size: 20px;
+    margin-top: 3px;
+    font-size: 13px;
+    line-height: 1;
   }
 
   .homex-grid,
   .homex-mid {
     gap: 8px;
+  }
+
+  .homex-mid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .homex-wrap.v2 .homex-panel h3 {
@@ -3150,6 +3188,11 @@ html[data-theme="light"] .touchkbd-card {
 
   .homex-wrap.v2 .homex-panel .big {
     font-size: 16px;
+  }
+
+  .homex-list,
+  .homex-bars {
+    gap: 6px;
   }
 
   .homex-row,
@@ -4555,6 +4598,82 @@ html[data-theme="light"] .touchkbd-card {
 }
 
 @media (min-width: 1200px) and (max-height: 1100px) {
+  .salesx-cards {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .salesx-card {
+    min-height: 50px;
+    padding: 6px 7px;
+  }
+
+  .salesx-card p {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .salesx-card strong {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .homex-kpis.v2 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .homex-kpis.v2 .homex-kpi {
+    min-height: 54px;
+    padding: 6px 7px;
+  }
+
+  .homex-kpis.v2 .homex-kpi strong {
+    margin-top: 3px;
+    font-size: 12px;
+  }
+
+  .homex-kpis.v2 .homex-kpi .homex-kpi-title,
+  .homex-kpis.v2 .homex-kpi small,
+  .homex-kpis.v2 .homex-kpi span {
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  .homex-kpi-title {
+    gap: 4px;
+  }
+
+  .homex-kpi-title .icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .homex-mid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .homex-mid > .homex-panel {
+    min-width: 0;
+  }
+
+  .homex-wrap.v2 .homex-panel h3 {
+    font-size: 16px;
+  }
+
+  .homex-wrap.v2 .homex-panel .big {
+    font-size: 14px;
+  }
+
+  .homex-row,
+  .homex-bar-label,
+  .homex-debt-totals p,
+  .homex-wrap.v2 .hint {
+    font-size: 10px;
+  }
+
   .cashier-page {
     grid-template-columns: 210px minmax(0, 1fr) 360px;
     min-height: 100vh;
