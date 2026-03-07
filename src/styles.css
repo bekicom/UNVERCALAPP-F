@@ -2249,7 +2249,7 @@ th {
   width: 100%;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 220px 1fr 430px;
+  grid-template-columns: 220px 1fr 560px;
   background: #101722;
   color: #e8eff8;
 }
@@ -2353,8 +2353,44 @@ th {
   font-size: 12px;
 }
 
+.cashier-price-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.cashier-price-input {
+  min-width: 64px;
+  width: 64px;
+  padding: 7px 10px;
+  font-size: 13px;
+  text-align: right;
+}
+
+.cashier-price-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.cashier-price-switch button {
+  min-height: 28px;
+  min-width: 62px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  justify-content: center;
+  font-size: 12px;
+  background: rgba(38, 50, 70, 0.9);
+  border: 1px solid rgba(131, 151, 176, 0.24);
+}
+
+.cashier-price-switch button.active {
+  background: linear-gradient(135deg, #0eacb4, #0f766e);
+  border-color: rgba(83, 241, 234, 0.45);
+}
+
 .cashier-right {
-  padding: 14px;
+  padding: 4px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto auto;
   gap: 12px;
@@ -2382,10 +2418,10 @@ th {
   table-layout: auto;
 }
 
-.cashier-col-product { width: 30%; }
-.cashier-col-price { width: 16%; }
-.cashier-col-qty { width: 30%; }
-.cashier-col-sum { width: 16%; }
+.cashier-col-product { width: 22%; }
+.cashier-col-price { width: 34%; }
+.cashier-col-qty { width: 22%; }
+.cashier-col-sum { width: 14%; }
 .cashier-col-del { width: 8%; }
 
 .cashier-cart-table th {
@@ -2394,8 +2430,8 @@ th {
 
 .cashier-cart-table th,
 .cashier-cart-table td {
-  padding: 10px 8px;
-  font-size: 12px;
+  padding: 12px 10px;
+  font-size: 13px;
   border-bottom: 1px solid rgba(117, 136, 160, 0.3);
   color: #e2ebf7;
   vertical-align: middle;
@@ -2407,20 +2443,20 @@ th {
 
 .cashier-qty {
   display: inline-grid;
-  grid-template-columns: 20px 50px 20px auto;
+  grid-template-columns: 24px 58px 24px auto;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
 }
 
 .cashier-qty button {
-  width: 22px;
-  height: 22px;
-  min-width: 20px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   padding: 0;
   border-radius: 5px;
   background: #334154;
-  font-size: 12px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2430,25 +2466,25 @@ th {
 }
 
 .cashier-qty input {
-  width: 50px;
-  padding: 4px 4px;
+  width: 58px;
+  padding: 5px 6px;
   text-align: center;
   border-radius: 6px;
   background: #111a26;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .cashier-qty-unit {
-  font-size: 10px;
+  font-size: 11px;
   color: #bcd0e8;
   font-weight: 600;
   min-width: 20px;
 }
 
 .cashier-del-btn {
-  width: 22px;
-  min-width: 22px;
-  height: 26px;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
   border-radius: 7px;
   background: linear-gradient(135deg, #dc2626, #b91c1c);
   font-weight: 700;
@@ -2479,6 +2515,8 @@ th {
   border: 1px solid #2c3f5f;
   color: #dce8ff;
   justify-content: center;
+  height: 56px;
+  font-size: 20px !important;
 }
 
 .cashier-pay-types button:nth-child(4) {
@@ -2554,7 +2592,7 @@ th {
 }
 
 .cashier-total strong {
-  font-size: 28px;
+  font-size: 38px;
 }
 
 .cashier-sell-btn {
@@ -3419,7 +3457,7 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .cashier-page {
-    grid-template-columns: 170px 1fr 280px;
+    grid-template-columns: 170px 1fr 380px;
   }
 
   .cashier-left,
@@ -3539,6 +3577,72 @@ html[data-theme="light"] .touchkbd-card {
   }
 }
 
+@media (min-width: 1400px) and (max-width: 1500px) {
+  .cashier-page {
+    grid-template-columns: 180px minmax(0, 1fr) 500px;
+  }
+
+  .cashier-left,
+  .cashier-center,
+  .cashier-right {
+    padding: 10px;
+  }
+
+  .cashier-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cashier-product-card {
+    min-height: 126px;
+  }
+
+  .cashier-col-product { width: 21%; }
+  .cashier-col-price { width: 37%; }
+  .cashier-col-qty { width: 20%; }
+  .cashier-col-sum { width: 14%; }
+  .cashier-col-del { width: 8%; }
+
+  .cashier-cart-table th,
+  .cashier-cart-table td {
+    font-size: 14px;
+  }
+
+  .cashier-price-input {
+    min-width: 72px;
+    width: 72px;
+    font-size: 14px;
+  }
+
+  .cashier-price-switch button {
+    min-height: 30px;
+    min-width: 68px;
+    font-size: 12px;
+  }
+
+  .cashier-qty {
+    grid-template-columns: 26px 60px 26px auto;
+    gap: 5px;
+  }
+
+  .cashier-qty button {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 14px;
+  }
+
+  .cashier-qty input {
+    width: 60px;
+    font-size: 14px;
+  }
+
+  .cashier-del-btn {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+  }
+}
 @media (max-width: 1366px), (max-height: 900px) {
   .auth-card {
     width: min(400px, 88vw);
@@ -3855,7 +3959,7 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .cashier-page {
-    grid-template-columns: 190px 1fr 320px;
+    grid-template-columns: 190px 1fr 430px;
   }
 
   .cashier-left,
@@ -4155,7 +4259,7 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .cashier-page {
-    grid-template-columns: 200px minmax(0, 1fr) 360px;
+    grid-template-columns: 200px minmax(0, 1fr) 470px;
   }
 
   .cashier-product-grid {
@@ -4732,7 +4836,7 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .cashier-page {
-    grid-template-columns: 210px minmax(0, 1fr) 360px;
+    grid-template-columns: 210px minmax(0, 1fr) 470px;
     min-height: 100vh;
   }
 

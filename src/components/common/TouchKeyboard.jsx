@@ -37,6 +37,7 @@ export function TouchKeyboard({ enabled = true }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("text");
   const targetRef = useRef(null);
+  const keepFocus = (e) => e.preventDefault();
 
   useEffect(() => {
     if (!enabled) {
@@ -50,7 +51,15 @@ export function TouchKeyboard({ enabled = true }) {
       if (!isKeyboardTarget(el)) return;
       targetRef.current = el;
       const t = String(el.type || "").toLowerCase();
-      setMode(t === "number" || t === "tel" ? "number" : "text");
+      const inputMode = String(el.inputMode || "").toLowerCase();
+      setMode(
+        t === "number" ||
+        t === "tel" ||
+        inputMode === "decimal" ||
+        inputMode === "numeric"
+          ? "number"
+          : "text"
+      );
       setOpen(true);
     };
 
@@ -64,6 +73,11 @@ export function TouchKeyboard({ enabled = true }) {
     const el = targetRef.current;
     if (!el) return;
     const current = String(el.value || "");
+    const type = String(el.type || "").toLowerCase();
+    if ((type === "number" || type === "tel") && chars === "." && current.includes(".")) {
+      el.focus();
+      return;
+    }
     const start = Number.isFinite(el.selectionStart) ? el.selectionStart : current.length;
     const end = Number.isFinite(el.selectionEnd) ? el.selectionEnd : start;
     const next = `${current.slice(0, start)}${chars}${current.slice(end)}`;
@@ -108,8 +122,8 @@ export function TouchKeyboard({ enabled = true }) {
         <div className="touchkbd-head">
           <strong>Ekran klaviaturasi</strong>
           <div className="touchkbd-head-actions">
-            <button type="button" className="ghost" onClick={clearAll}>Tozalash</button>
-            <button type="button" className="ghost" onClick={() => setOpen(false)}>Yopish</button>
+            <button type="button" className="ghost" onMouseDown={keepFocus} onClick={clearAll}>Tozalash</button>
+            <button type="button" className="ghost" onMouseDown={keepFocus} onClick={() => setOpen(false)}>Yopish</button>
           </div>
         </div>
 
@@ -117,18 +131,18 @@ export function TouchKeyboard({ enabled = true }) {
           {rows.map((row, i) => (
             <div className="touchkbd-row" key={i}>
               {row.map((k) => (
-                <button type="button" key={k} onClick={() => typeChars(k)}>{k}</button>
+                <button type="button" key={k} onMouseDown={keepFocus} onClick={() => typeChars(k)}>{k}</button>
               ))}
             </div>
           ))}
           {mode === "text" ? (
             <div className="touchkbd-row">
-              <button type="button" className="wide" onClick={() => typeChars(" ")}>Bo'shliq</button>
-              <button type="button" className="ghost" onClick={backspace}>⌫</button>
+              <button type="button" className="wide" onMouseDown={keepFocus} onClick={() => typeChars(" ")}>Bo'shliq</button>
+              <button type="button" className="ghost" onMouseDown={keepFocus} onClick={backspace}>⌫</button>
             </div>
           ) : (
             <div className="touchkbd-row">
-              <button type="button" className="ghost" onClick={backspace}>⌫</button>
+              <button type="button" className="ghost" onMouseDown={keepFocus} onClick={backspace}>⌫</button>
             </div>
           )}
         </div>
@@ -136,4 +150,3 @@ export function TouchKeyboard({ enabled = true }) {
     </div>
   );
 }
-

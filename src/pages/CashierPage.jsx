@@ -33,6 +33,18 @@ function paymentLabel(value) {
   return value || "-";
 }
 
+function normalizePriceInput(value) {
+  return String(value ?? "")
+    .replace(/,/g, ".")
+    .replace(/[^0-9.]/g, "")
+    .replace(/(\..*?)\./g, "$1");
+}
+
+function getUnitPriceByType(product, priceType) {
+  if (priceType === "wholesale") return Number(product?.wholesalePrice || 0);
+  return Number(product?.retailPrice || 0);
+}
+
 function openPrintCheck(sale, settings) {
   const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
@@ -339,11 +351,53 @@ export function CashierPage({ user, onLogout }) {
           id: product._id,
           name: product.name,
           unit,
-          price: Number(product.retailPrice || 0),
+          priceType: "retail",
+          price: getUnitPriceByType(product, "retail"),
+          retailPrice: Number(product.retailPrice || 0),
+          wholesalePrice: Number(product.wholesalePrice || 0),
           qty: defaultQty
         }
       ];
     });
+  };
+
+  const updateCartPriceType = (id, priceType) => {
+    setCart((prev) => prev.map((row) => (
+      row.id === id
+        ? {
+            ...row,
+            priceType,
+            price: priceType === "wholesale" ? Number(row.wholesalePrice || 0) : Number(row.retailPrice || 0),
+          }
+        : row
+    )));
+  };
+
+  const toggleCartPriceType = (id) => {
+    setCart((prev) => prev.map((row) => {
+      if (row.id !== id) return row;
+      const nextPriceType = row.priceType === "wholesale" ? "retail" : "wholesale";
+      return {
+        ...row,
+        priceType: nextPriceType,
+        price: nextPriceType === "wholesale"
+          ? Number(row.wholesalePrice || 0)
+          : Number(row.retailPrice || 0),
+      };
+    }));
+  };
+
+  const updateCartPrice = (id, rawPrice) => {
+    const normalized = normalizePriceInput(rawPrice);
+    const parsed = Number(normalized);
+    setCart((prev) => prev.map((row) => (
+      row.id === id
+        ? {
+            ...row,
+            price: normalized === "" ? 0 : (Number.isFinite(parsed) ? Math.max(0, parsed) : row.price),
+          }
+        : row
+    )));
   };
 
   const updateCartQty = (id, nextQty) => {
@@ -426,7 +480,12 @@ export function CashierPage({ user, onLogout }) {
 
     const sellableItems = cart
       .filter((item) => Number(item.qty) > 0)
-      .map((item) => ({ productId: item.id, quantity: Number(item.qty) }));
+      .map((item) => ({
+        productId: item.id,
+        quantity: Number(item.qty),
+        priceType: item.priceType || "retail",
+        unitPrice: Number(item.price || 0),
+      }));
 
     if (sellableItems.length < 1) {
       setSaleError("Kamida bitta mahsulot miqdori 0 dan katta bo'lsin");
@@ -622,7 +681,8 @@ export function CashierPage({ user, onLogout }) {
               <h3>{product.name}</h3>
               <p>{product.model || "-"}</p>
               <div className="cashier-card-foot">
-                <span>{formatMoney(product.retailPrice)} so'm</span>
+                <span>Chakana: {formatMoney(product.retailPrice)} so'm</span>
+                <span>Optom: {formatMoney(product.wholesalePrice)} so'm</span>
                 <span>Qoldiq: {formatMoney(product.quantity)} {product.unit || "dona"}</span>
               </div>
             </button>
@@ -658,7 +718,26 @@ export function CashierPage({ user, onLogout }) {
               ) : cart.map((row) => (
                 <tr key={row.id}>
                   <td>{row.name}</td>
-                  <td>{formatMoney(row.price)}</td>
+                  <td>
+                    <div className="cashier-price-box">
+                      <input
+                        className="cashier-price-input"
+                        value={row.price > 0 ? String(row.price) : ""}
+                        onChange={(e) => updateCartPrice(row.id, e.target.value)}
+                        inputMode="decimal"
+                        placeholder="Narx"
+                      />
+                      <div className="cashier-price-switch">
+                        <button
+                          type="button"
+                          className={row.priceType === "wholesale" ? "active" : ""}
+                          onClick={() => toggleCartPriceType(row.id)}
+                        >
+                          {row.priceType === "wholesale" ? "Optom" : "Dona"}
+                        </button>
+                      </div>
+                    </div>
+                  </td>
                   <td>
                     <div className="cashier-qty">
                       <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty - getStepByUnit(row.unit)).toFixed(2)))}>-</button>

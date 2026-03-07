@@ -1,5 +1,12 @@
 import { formatMoney } from "../../utils/format";
 
+function normalizeDecimalInput(value) {
+  return String(value ?? "")
+    .replace(/,/g, ".")
+    .replace(/[^0-9.]/g, "")
+    .replace(/(\..*?)\./g, "$1");
+}
+
 export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, error, suppliers, product, usdRate = 12171 }) {
   if (!open || !product) return null;
 
@@ -37,7 +44,7 @@ export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, 
           </label>
           <label>
             Kelish narxi (1 birlik)
-            <input type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm((p) => ({ ...p, purchasePrice: e.target.value }))} required />
+            <input type="text" inputMode="decimal" autoComplete="off" value={form.purchasePrice} onChange={(e) => setForm((p) => ({ ...p, purchasePrice: normalizeDecimalInput(e.target.value) }))} required />
           </label>
           <p className="hint">
             Umumiy kirim: {formatMoney(totalInput)} {form.priceCurrency === "usd" ? "$" : "so'm"}
@@ -58,16 +65,16 @@ export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, 
             <>
               <label>
                 Yangi dona/chakana narx
-                <input type="number" min="0" step="0.01" value={form.retailPrice} onChange={(e) => setForm((p) => ({ ...p, retailPrice: e.target.value }))} required />
+                <input type="text" inputMode="decimal" autoComplete="off" value={form.retailPrice} onChange={(e) => setForm((p) => ({ ...p, retailPrice: normalizeDecimalInput(e.target.value) }))} required />
               </label>
               <label>
                 Yangi optom narx
-                <input type="number" min="0" step="0.01" value={form.wholesalePrice} onChange={(e) => setForm((p) => ({ ...p, wholesalePrice: e.target.value }))} required />
+                <input type="text" inputMode="decimal" autoComplete="off" value={form.wholesalePrice} onChange={(e) => setForm((p) => ({ ...p, wholesalePrice: normalizeDecimalInput(e.target.value) }))} required />
               </label>
               {showPiecePrice ? (
                 <label>
                   Yangi {product.pieceUnit || "kg"} narxi
-                  <input type="number" min="0" step="0.01" value={form.piecePrice} onChange={(e) => setForm((p) => ({ ...p, piecePrice: e.target.value }))} required />
+                  <input type="text" inputMode="decimal" autoComplete="off" value={form.piecePrice} onChange={(e) => setForm((p) => ({ ...p, piecePrice: normalizeDecimalInput(e.target.value) }))} required />
                 </label>
               ) : null}
             </>
@@ -84,7 +91,7 @@ export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, 
           {form.paymentType === "qisman" ? (
             <label>
               To'langan summa
-              <input type="number" min="0" step="0.01" value={form.paidAmount} onChange={(e) => setForm((p) => ({ ...p, paidAmount: e.target.value }))} required />
+              <input type="text" inputMode="decimal" autoComplete="off" value={form.paidAmount} onChange={(e) => setForm((p) => ({ ...p, paidAmount: normalizeDecimalInput(e.target.value) }))} required />
             </label>
           ) : null}
           {error ? <p className="error-text">{error}</p> : null}
