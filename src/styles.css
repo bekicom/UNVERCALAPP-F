@@ -708,6 +708,9 @@ button.ghost {
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
+  min-width: 0;
+  overflow: hidden;
+  transition: transform 0.24s ease, opacity 0.24s ease, padding 0.24s ease, border-color 0.24s ease;
 }
 
 .sidebar-top {
@@ -769,6 +772,8 @@ button.ghost {
   grid-template-rows: auto auto 1fr auto;
   gap: 10px;
   background: #0a1328;
+  min-width: 0;
+  transition: padding 0.24s ease;
 }
 
 .topbar {
@@ -780,6 +785,58 @@ button.ghost {
   padding: 0 12px;
   background: #081024;
   border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.topbar-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+}
+
+.dashboard-page.sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.dashboard-page.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  padding-left: 0;
+  padding-right: 0;
+  border-right-color: transparent;
+}
+
+.dashboard-page.sidebar-collapsed .workspace {
+  padding: 10px;
+}
+
+.dashboard-page.sidebar-collapsed .topbar h1,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-topbar h2,
+.dashboard-page.sidebar-collapsed .salesx-header h2 {
+  font-size: 24px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi strong,
+.dashboard-page.sidebar-collapsed .salesx-card strong,
+.dashboard-page.sidebar-collapsed .sales-stat-card strong,
+.dashboard-page.sidebar-collapsed .salesv2-kpi strong,
+.dashboard-page.sidebar-collapsed .card p {
+  font-size: 18px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel h3,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel .big,
+.dashboard-page.sidebar-collapsed .salesx-card p,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi span,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi small {
+  font-size: 11px;
 }
 
 .toolbar-actions {
@@ -4804,4 +4861,27 @@ html[data-theme="light"] .touchkbd-card {
     height: 42px;
     font-size: 15px;
   }
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 {
+  gap: 7px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi {
+  min-height: 62px;
+  padding: 7px 8px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi strong,
+.dashboard-page.sidebar-collapsed .salesx-card strong {
+  font-size: 14px;
+}
+
+.dashboard-page.sidebar-collapsed .salesx-cards {
+  gap: 7px;
+}
+
+.dashboard-page.sidebar-collapsed .salesx-card {
+  min-height: 58px;
+  padding: 7px 8px;
 }

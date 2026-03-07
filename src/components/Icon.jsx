@@ -44,6 +44,8 @@ export function Icon({ name, className = "" }) {
       return <svg {...baseProps}><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>;
     case "wallet":
       return <svg {...baseProps}><path d="M3 7a2 2 0 0 1 2-2h14v14H5a2 2 0 0 1-2-2Z" /><path d="M19 10h2v4h-2a2 2 0 1 1 0-4Z" /></svg>;
+    case "menu":
+      return <svg {...baseProps}><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></svg>;
     default:
       return <svg {...baseProps}><circle cx="12" cy="12" r="2" /></svg>;
   }
