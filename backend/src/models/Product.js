@@ -3,11 +3,14 @@ const PRODUCT_UNITS = ["dona", "kg", "blok", "pachka", "qop"];
 
 const productSchema = new mongoose.Schema(
   {
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
     name: { type: String, required: true, trim: true },
     model: { type: String, required: true, trim: true },
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
     supplierId: { type: mongoose.Schema.Types.ObjectId, ref: "Supplier", required: true },
     purchasePrice: { type: Number, required: true, min: 0 },
+    priceCurrency: { type: String, enum: ["uzs", "usd"], default: "uzs" },
+    usdRateUsed: { type: Number, required: true, min: 1, default: 12171 },
     totalPurchaseCost: { type: Number, required: true, min: 0, default: 0 },
     retailPrice: { type: Number, required: true, min: 0 },
     wholesalePrice: { type: Number, required: true, min: 0 },
@@ -24,6 +27,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-productSchema.index({ categoryId: 1, name: 1, model: 1 });
+productSchema.index({ tenantId: 1, categoryId: 1, name: 1, model: 1 }, { unique: true });
 
 export const Product = mongoose.model("Product", productSchema);

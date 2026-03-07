@@ -21,14 +21,17 @@ export function LoginPage({ onLogin }) {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <p className="badge">UY-DOKON</p>
-        <h1>Tizimga Kirish</h1>
-        <p className="hint">Admin yoki kassir hisobingiz bilan kiring.</p>
+        <h1>Login</h1>
+        <span className="auth-title-line" />
         <form onSubmit={handleSubmit} className="auth-form">
-          <label>Login<input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Login kiriting" /></label>
-          <label>Parol<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Parol kiriting" /></label>
+          <label>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
+          </label>
+          <label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+          </label>
           {error ? <p className="error-text">{error}</p> : null}
-          <button type="submit" disabled={isLoading}>{isLoading ? "Kirilmoqda..." : "Kirish"}</button>
+          <button type="submit" disabled={isLoading}>{isLoading ? "Kirilmoqda..." : "Login"}</button>
         </form>
       </div>
     </main>

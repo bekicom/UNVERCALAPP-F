@@ -1,5 +1,5 @@
 {
-  "name": "uy-dokon-frontend",
+  "name": "unvercalapp-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -12,8 +12,7 @@
     "@reduxjs/toolkit": "^2.11.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-redux": "^9.2.0",
-    "uy-dokon": "file:.."
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

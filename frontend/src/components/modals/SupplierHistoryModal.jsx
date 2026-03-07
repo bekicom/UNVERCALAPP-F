@@ -3,6 +3,20 @@ import { formatMoney } from "../../utils/format";
 export function SupplierHistoryModal({ open, supplier, daily, purchases, loading, error, onClose }) {
   if (!open) return null;
 
+  const fmtWithUsd = (uzs, usd) => {
+    const usdNum = Number(usd || 0);
+    if (!Number.isFinite(usdNum) || usdNum <= 0) return `${formatMoney(uzs)} so'm`;
+    return `${formatMoney(uzs)} so'm (${formatMoney(usdNum)}$)`;
+  };
+
+  const fmtPurchaseAmount = (p, uzsAmount) => {
+    const isUsd = String(p?.priceCurrency || "").toLowerCase() === "usd";
+    const rate = Number(p?.usdRateUsed || 0);
+    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(uzsAmount);
+    const usd = Number(uzsAmount || 0) / rate;
+    return `${formatMoney(uzsAmount)} (${formatMoney(usd)}$)`;
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
@@ -16,9 +30,9 @@ export function SupplierHistoryModal({ open, supplier, daily, purchases, loading
               {daily.map((d) => (
                 <div key={d._id} className="history-item">
                   <strong>{d._id}</strong>
-                  <p>Jami summa: {formatMoney(d.totalCost)} so'm</p>
-                  <p>To'langan: {formatMoney(d.totalPaid)} so'm</p>
-                  <p>Qarz: {formatMoney(d.totalDebt)} so'm</p>
+                  <p>Jami summa: {fmtWithUsd(d.totalCost, d.totalCostUsd)}</p>
+                  <p>To'langan: {fmtWithUsd(d.totalPaid, d.totalPaidUsd)}</p>
+                  <p>Qarz: {fmtWithUsd(d.totalDebt, d.totalDebtUsd)}</p>
                   <p>Pozitsiya: {d.items}</p>
                 </div>
               ))}
@@ -44,10 +58,10 @@ export function SupplierHistoryModal({ open, supplier, daily, purchases, loading
                       <td>{new Date(p.purchasedAt).toLocaleString()}</td>
                       <td>{p.productName} ({p.productModel})</td>
                       <td>{p.quantity} {p.unit}</td>
-                      <td>{formatMoney(p.purchasePrice)}</td>
-                      <td>{formatMoney(p.totalCost)}</td>
-                      <td>{formatMoney(p.paidAmount)}</td>
-                      <td className="stock">{formatMoney(p.debtAmount)}</td>
+                      <td>{fmtPurchaseAmount(p, p.purchasePrice)}</td>
+                      <td>{fmtPurchaseAmount(p, p.totalCost)}</td>
+                      <td>{fmtPurchaseAmount(p, p.paidAmount)}</td>
+                      <td className="stock">{fmtPurchaseAmount(p, p.debtAmount)}</td>
                     </tr>
                   ))}
                   {purchases.length === 0 ? <tr><td colSpan="7">Kirim topilmadi</td></tr> : null}

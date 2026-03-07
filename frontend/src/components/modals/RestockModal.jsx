@@ -1,8 +1,14 @@
-export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, error, suppliers, product }) {
+import { formatMoney } from "../../utils/format";
+
+export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, error, suppliers, product, usdRate = 12171 }) {
   if (!open || !product) return null;
 
   const requiresNewPrices = form.pricingMode !== "keep_old";
   const showPiecePrice = product.unit === "qop" && product.allowPieceSale && requiresNewPrices;
+  const totalInput = (Number(form.purchasePrice) || 0) * (Number(form.quantity) || 0);
+  const totalUzs = form.priceCurrency === "usd"
+    ? totalInput * Number(usdRate || 0)
+    : totalInput;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -23,9 +29,22 @@ export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, 
             <input type="number" min="0" step="1" value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} required />
           </label>
           <label>
+            Valyuta
+            <select value={form.priceCurrency || "uzs"} onChange={(e) => setForm((p) => ({ ...p, priceCurrency: e.target.value }))}>
+              <option value="uzs">So'm</option>
+              <option value="usd">USD ($)</option>
+            </select>
+          </label>
+          <label>
             Kelish narxi (1 birlik)
             <input type="number" min="0" step="0.01" value={form.purchasePrice} onChange={(e) => setForm((p) => ({ ...p, purchasePrice: e.target.value }))} required />
           </label>
+          <p className="hint">
+            Umumiy kirim: {formatMoney(totalInput)} {form.priceCurrency === "usd" ? "$" : "so'm"}
+          </p>
+          {form.priceCurrency === "usd" ? (
+            <p className="hint">So'mda: {formatMoney(totalUzs)} so'm</p>
+          ) : null}
           <label>
             Narx strategiyasi
             <select value={form.pricingMode} onChange={(e) => setForm((p) => ({ ...p, pricingMode: e.target.value }))}>

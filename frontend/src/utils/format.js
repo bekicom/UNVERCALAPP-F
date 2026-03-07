@@ -3,7 +3,12 @@ import { PRODUCT_UNITS } from "../constants/ui";
 export function formatMoney(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "0";
-  return num.toLocaleString();
+  const rounded = Math.round(num * 100) / 100;
+  const hasTiyin = Math.abs(rounded - Math.trunc(rounded)) > 0.000001;
+  return rounded.toLocaleString(undefined, {
+    minimumFractionDigits: hasTiyin ? 2 : 0,
+    maximumFractionDigits: 2
+  });
 }
 
 export function normalizeUnit(value) {

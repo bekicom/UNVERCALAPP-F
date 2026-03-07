@@ -11,6 +11,7 @@ export function ProductModal({
   error,
   categories,
   suppliers,
+  usdRate = 12171,
   openCreateSupplierModal,
 }) {
   if (!open) return null;
@@ -19,202 +20,230 @@ export function ProductModal({
   const suggestedPiecePrice = pieceQty > 0 ? Math.round(retail / pieceQty) : 0;
   const totalPurchaseCost =
     (Number(form.purchasePrice) || 0) * (Number(form.quantity) || 0);
+  const totalPurchaseCostUzs =
+    (form.priceCurrency === "usd" ? totalPurchaseCost * Number(usdRate || 0) : totalPurchaseCost);
   const debtAmount = Math.max(
     0,
     totalPurchaseCost - (Number(form.paidAmount) || 0),
   );
+  const debtAmountUzs =
+    (form.priceCurrency === "usd" ? debtAmount * Number(usdRate || 0) : debtAmount);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card modal-product" onClick={(e) => e.stopPropagation()}>
         <h3>{form.id ? "Mahsulotni edit" : "Yangi mahsulot yaratish"}</h3>
-        <form className="modal-form" onSubmit={onSubmit}>
+        <form className="modal-form product-modal-form" onSubmit={onSubmit}>
           <p className="modal-subtitle">Asosiy ma'lumotlar</p>
-          <label>
-            Mahsulot nomi
-            <input
-              value={form.name}
-              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            Modeli
-            <input
-              value={form.model}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, model: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label>
-            Birligi
-            <select
-              value={form.unit}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  unit: e.target.value,
-                  ...(e.target.value === "qop"
-                    ? {}
-                    : {
-                        allowPieceSale: false,
-                        pieceUnit: "kg",
-                        pieceQtyPerBase: "",
-                        piecePrice: "",
-                      }),
-                }))
-              }
-            >
-              {PRODUCT_UNITS.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Kategoriya
-            <select
-              value={form.categoryId}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, categoryId: e.target.value }))
-              }
-              required
-            >
-              <option value="">Tanlang</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Yetkazib beruvchi
-            <select
-              value={form.supplierId}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, supplierId: e.target.value }))
-              }
-              required
-            >
-              <option value="">Tanlang</option>
-              {suppliers.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="ghost"
-            onClick={openCreateSupplierModal}
-          >
-            + Yangi yetkazib beruvchi
-          </button>
-          <label>
-            Miqdori
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={form.quantity}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, quantity: e.target.value }))
-              }
-              required
-            />
-          </label>
-
-          <p className="modal-subtitle">Narxlar</p>
-          <label>
-            Kelish narxi
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.purchasePrice}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, purchasePrice: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label>
-            {form.unit === "qop"
-              ? "Qop narxi (chakana)"
-              : "Dona narxi (chakana)"}
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.retailPrice}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, retailPrice: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label>
-            {form.unit === "qop" ? "Qop narxi (optom)" : "Optom narxi"}
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.wholesalePrice}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, wholesalePrice: e.target.value }))
-              }
-              required
-            />
-          </label>
-          <label>
-            To'lov turi
-            <select
-              value={form.paymentType}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  paymentType: e.target.value,
-                  paidAmount:
-                    e.target.value === "naqd"
-                      ? String(totalPurchaseCost)
-                      : e.target.value === "qarz"
-                        ? "0"
-                        : p.paidAmount,
-                }))
-              }
-            >
-              <option value="naqd">Naqd</option>
-              <option value="qisman">Qisman</option>
-              <option value="qarz">Qarz</option>
-            </select>
-          </label>
-          {form.paymentType === "qisman" ? (
+          <div className="product-modal-grid product-modal-grid-basic">
             <label>
-              Hozir to'langan summa
+              Mahsulot nomi
               <input
-                type="number"
-                min="0"
-                max={totalPurchaseCost}
-                step="0.01"
-                value={form.paidAmount}
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                required
+              />
+            </label>
+            <label>
+              Modeli
+              <input
+                value={form.model}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, paidAmount: e.target.value }))
+                  setForm((p) => ({ ...p, model: e.target.value }))
                 }
                 required
               />
             </label>
-          ) : null}
-          <p className="hint">
-            Umumiy kelish summasi: {formatMoney(totalPurchaseCost)} so'm
-          </p>
-          <p className="hint">Joriy qarz: {formatMoney(debtAmount)} so'm</p>
+            <label>
+              Birligi
+              <select
+                value={form.unit}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    unit: e.target.value,
+                    ...(e.target.value === "qop"
+                      ? {}
+                      : {
+                          allowPieceSale: false,
+                          pieceUnit: "kg",
+                          pieceQtyPerBase: "",
+                          piecePrice: "",
+                        }),
+                  }))
+                }
+              >
+                {PRODUCT_UNITS.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Kategoriya
+              <select
+                value={form.categoryId}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, categoryId: e.target.value }))
+                }
+                required
+              >
+                <option value="">Tanlang</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Yetkazib beruvchi
+              <select
+                value={form.supplierId}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, supplierId: e.target.value }))
+                }
+                required
+              >
+                <option value="">Tanlang</option>
+                {suppliers.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Miqdori
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={form.quantity}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, quantity: e.target.value }))
+                }
+                required
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            className="ghost product-modal-supplier-btn"
+            onClick={openCreateSupplierModal}
+          >
+            + Yangi yetkazib beruvchi
+          </button>
+
+          <p className="modal-subtitle">Narxlar</p>
+          <div className="product-modal-grid product-modal-grid-pricing">
+            <label>
+              Valyuta
+              <select
+                value={form.priceCurrency || "uzs"}
+                onChange={(e) => setForm((p) => ({ ...p, priceCurrency: e.target.value }))}
+              >
+                <option value="uzs">So'm</option>
+                <option value="usd">USD ($)</option>
+              </select>
+            </label>
+            <label>
+              Kelish narxi
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.purchasePrice}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, purchasePrice: e.target.value }))
+                }
+                required
+              />
+            </label>
+            <label>
+              {form.unit === "qop"
+                ? "Qop narxi (chakana)"
+                : "Dona narxi (chakana)"}
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.retailPrice}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, retailPrice: e.target.value }))
+                }
+                required
+              />
+            </label>
+            <label>
+              {form.unit === "qop" ? "Qop narxi (optom)" : "Optom narxi"}
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.wholesalePrice}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, wholesalePrice: e.target.value }))
+                }
+                required
+              />
+            </label>
+            <label>
+              To'lov turi
+              <select
+                value={form.paymentType}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    paymentType: e.target.value,
+                    paidAmount:
+                      e.target.value === "naqd"
+                        ? String(totalPurchaseCost)
+                        : e.target.value === "qarz"
+                          ? "0"
+                          : p.paidAmount,
+                  }))
+                }
+              >
+                <option value="naqd">Naqd</option>
+                <option value="qisman">Qisman</option>
+                <option value="qarz">Qarz</option>
+              </select>
+            </label>
+            {form.paymentType === "qisman" ? (
+              <label>
+                Hozir to'langan summa
+                <input
+                  type="number"
+                  min="0"
+                  max={totalPurchaseCost}
+                  step="0.01"
+                  value={form.paidAmount}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, paidAmount: e.target.value }))
+                  }
+                  required
+                />
+              </label>
+            ) : null}
+          </div>
+          <div className="product-modal-hints">
+            <p className="hint">
+              Umumiy kelish summasi: {formatMoney(totalPurchaseCost)} {form.priceCurrency === "usd" ? "$" : "so'm"}
+            </p>
+            {form.priceCurrency === "usd" ? (
+              <p className="hint">So'mda: {formatMoney(totalPurchaseCostUzs)} so'm</p>
+            ) : null}
+            <p className="hint">
+              Joriy qarz: {formatMoney(debtAmount)} {form.priceCurrency === "usd" ? "$" : "so'm"}
+            </p>
+            {form.priceCurrency === "usd" ? (
+              <p className="hint">Qarz so'mda: {formatMoney(debtAmountUzs)} so'm</p>
+            ) : null}
+          </div>
           {form.unit === "qop" ? (
-            <div className="piece-box">
+            <div className="piece-box product-piece-box">
               <label className="check-line">
                 <input
                   type="checkbox"
@@ -244,7 +273,7 @@ export function ProductModal({
                     />
                   </label>
                   <p className="hint">
-                    Tavsiya (qop narxidan): {suggestedPiecePrice || 0} so'm/
+                    Tavsiya (qop narxidan): {suggestedPiecePrice || 0} {form.priceCurrency === "usd" ? "$" : "so'm"}/
                     {form.pieceUnit}
                   </p>
                   <label>

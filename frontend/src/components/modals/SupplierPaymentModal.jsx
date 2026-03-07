@@ -18,6 +18,20 @@ export function SupplierPaymentModal({
 }) {
   if (!open) return null;
 
+  const fmtWithUsd = (uzs, usd) => {
+    const usdNum = Number(usd || 0);
+    if (!Number.isFinite(usdNum) || usdNum <= 0) return `${formatMoney(uzs)} so'm`;
+    return `${formatMoney(uzs)} so'm (${formatMoney(usdNum)}$)`;
+  };
+
+  const fmtPurchaseAmount = (p, uzsAmount) => {
+    const isUsd = String(p?.priceCurrency || "").toLowerCase() === "usd";
+    const rate = Number(p?.usdRateUsed || 0);
+    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(uzsAmount);
+    const usd = Number(uzsAmount || 0) / rate;
+    return `${formatMoney(uzsAmount)} (${formatMoney(usd)}$)`;
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card modal-wide" onClick={(e) => e.stopPropagation()}>
@@ -30,9 +44,9 @@ export function SupplierPaymentModal({
             <div className="history-grid">
               <div className="history-item">
                 <strong>Holat</strong>
-                <p>Jami kelish: {formatMoney(totals?.totalPurchase || 0)} so'm</p>
-                <p>Jami to'langan: {formatMoney(totals?.totalPaid || 0)} so'm</p>
-                <p>Qolgan qarz: {formatMoney(totals?.totalDebt || 0)} so'm</p>
+                <p>Jami kelish: {fmtWithUsd(totals?.totalPurchase || 0, totals?.totalPurchaseUsd || 0)}</p>
+                <p>Jami to'langan: {fmtWithUsd(totals?.totalPaid || 0, totals?.totalPaidUsd || 0)}</p>
+                <p>Qolgan qarz: {fmtWithUsd(totals?.totalDebt || 0, totals?.totalDebtUsd || 0)}</p>
               </div>
               <div className="history-item">
                 <strong>Qarz to'lovi</strong>
@@ -101,7 +115,7 @@ export function SupplierPaymentModal({
                     <tr key={p._id}>
                       <td>{new Date(p.purchasedAt).toLocaleString()}</td>
                       <td>{p.productName} ({p.productModel})</td>
-                      <td className="stock">{formatMoney(p.debtAmount)}</td>
+                      <td className="stock">{fmtPurchaseAmount(p, p.debtAmount)}</td>
                     </tr>
                   ))}
                   {debtPurchases.length === 0 ? <tr><td colSpan="3">Ochiq qarz yo'q</td></tr> : null}

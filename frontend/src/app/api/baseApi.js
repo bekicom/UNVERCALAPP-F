@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://unvercalapp.richman.uz/api";
 
 export const baseApi = createApi({
   reducerPath: "api",
@@ -12,7 +12,7 @@ export const baseApi = createApi({
       return headers;
     }
   }),
-  tagTypes: ["Overview", "User", "Category", "Supplier", "Product", "Expense", "SupplierFinance", "Sale"],
+  tagTypes: ["Overview", "User", "Category", "Supplier", "Product", "Expense", "SupplierFinance", "Sale", "Customer", "CustomerLedger", "Settings"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({ url: "/auth/login", method: "POST", body })
@@ -32,6 +32,14 @@ export const baseApi = createApi({
     updateUser: builder.mutation({
       query: ({ id, ...body }) => ({ url: `/admin/users/${id}`, method: "PUT", body }),
       invalidatesTags: ["User", "Overview"]
+    }),
+    getSettings: builder.query({
+      query: () => "/settings",
+      providesTags: ["Settings"]
+    }),
+    updateSettings: builder.mutation({
+      query: (body) => ({ url: "/settings", method: "PUT", body }),
+      invalidatesTags: ["Settings", "Product"]
     }),
     getCategories: builder.query({
       query: () => "/categories",
@@ -112,9 +120,40 @@ export const baseApi = createApi({
       },
       providesTags: ["Sale"]
     }),
+    getSaleReturns: builder.query({
+      query: ({ limit = 200, period = "", from = "", to = "" } = {}) => {
+        const params = new URLSearchParams();
+        params.set("limit", String(limit));
+        if (period) params.set("period", period);
+        if (from) params.set("from", from);
+        if (to) params.set("to", to);
+        return `/sales/returns?${params.toString()}`;
+      },
+      providesTags: ["Sale"]
+    }),
     createSale: builder.mutation({
       query: (body) => ({ url: "/sales", method: "POST", body }),
-      invalidatesTags: ["Sale", "Product", "Overview"]
+      invalidatesTags: ["Sale", "Product", "Overview", "Customer", "CustomerLedger"]
+    }),
+    returnSale: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/sales/${id}/returns`, method: "POST", body }),
+      invalidatesTags: ["Sale", "Product", "Overview", "Customer", "CustomerLedger"]
+    }),
+    getCustomers: builder.query({
+      query: () => "/customers",
+      providesTags: ["Customer"]
+    }),
+    searchCustomers: builder.query({
+      query: ({ q = "" } = {}) => `/customers/lookup?q=${encodeURIComponent(q)}`,
+      providesTags: ["Customer"]
+    }),
+    getCustomerLedger: builder.query({
+      query: (id) => `/customers/${id}/ledger`,
+      providesTags: (_, __, id) => [{ type: "CustomerLedger", id }]
+    }),
+    payCustomerDebt: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/customers/${id}/payments`, method: "POST", body }),
+      invalidatesTags: (_, __, arg) => [{ type: "CustomerLedger", id: arg.id }, "Customer", "Sale", "Overview"]
     })
   })
 });
@@ -125,6 +164,8 @@ export const {
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
+  useGetSettingsQuery,
+  useUpdateSettingsMutation,
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useGetSuppliersQuery,
@@ -143,5 +184,11 @@ export const {
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
   useGetSalesQuery,
-  useCreateSaleMutation
+  useGetSaleReturnsQuery,
+  useCreateSaleMutation,
+  useReturnSaleMutation,
+  useGetCustomersQuery,
+  useLazySearchCustomersQuery,
+  useLazyGetCustomerLedgerQuery,
+  usePayCustomerDebtMutation
 } = baseApi;

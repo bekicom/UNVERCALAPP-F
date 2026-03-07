@@ -8,18 +8,24 @@ import {
   useDeleteExpenseMutation,
   useDeleteProductMutation,
   useDeleteSupplierMutation,
+  useGetCustomersQuery,
   useGetCategoriesQuery,
   useGetExpensesQuery,
   useGetOverviewQuery,
   useGetProductsQuery,
+  useGetSaleReturnsQuery,
   useGetSalesQuery,
+  useGetSettingsQuery,
   useGetSuppliersQuery,
   useGetUsersQuery,
+  useLazyGetCustomerLedgerQuery,
   useLazyGetSupplierFinanceQuery,
+  usePayCustomerDebtMutation,
   usePaySupplierDebtMutation,
   useRestockProductMutation,
   useUpdateExpenseMutation,
   useUpdateProductMutation,
+  useUpdateSettingsMutation,
   useUpdateSupplierMutation,
   useUpdateUserMutation
 } from "../app/api/baseApi";
@@ -29,25 +35,35 @@ import { CategoryModal } from "../components/modals/CategoryModal";
 import { ExpenseModal } from "../components/modals/ExpenseModal";
 import { ProductModal } from "../components/modals/ProductModal";
 import { RestockModal } from "../components/modals/RestockModal";
+import { CustomerDebtModal } from "../components/modals/CustomerDebtModal";
 import { SupplierHistoryModal } from "../components/modals/SupplierHistoryModal";
 import { SupplierModal } from "../components/modals/SupplierModal";
 import { SupplierPaymentModal } from "../components/modals/SupplierPaymentModal";
 import { UserModal } from "../components/modals/UserModal";
+import { CustomersSection } from "../components/sections/CustomersSection";
 import { ExpensesSection } from "../components/sections/ExpensesSection";
+import { HomeSection } from "../components/sections/HomeSection";
 import { PlaceholderSection } from "../components/sections/PlaceholderSection";
 import { ProductsSection } from "../components/sections/ProductsSection";
+import { ReturnsSection } from "../components/sections/ReturnsSection";
 import { SalesSection } from "../components/sections/SalesSection";
+import { SettingsSection } from "../components/sections/SettingsSection";
 import { SuppliersSection } from "../components/sections/SuppliersSection";
 import { UsersSection } from "../components/sections/UsersSection";
 import { getCategoryId, getCategoryName, getSupplierName, getSupplierId, toDateInput } from "../utils/format";
 
-export function DashboardPage({ user, onLogout }) {
+export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () => {}, keyboardEnabled = true }) {
   const [activeSection, setActiveSection] = useState("Mahsulotlar");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [salesPeriod, setSalesPeriod] = useState("today");
   const [salesDateFrom, setSalesDateFrom] = useState("");
   const [salesDateTo, setSalesDateTo] = useState("");
+  const [homeDateFrom, setHomeDateFrom] = useState("");
+  const [homeDateTo, setHomeDateTo] = useState("");
+  const [returnsPeriod, setReturnsPeriod] = useState("today");
+  const [returnsDateFrom, setReturnsDateFrom] = useState("");
+  const [returnsDateTo, setReturnsDateTo] = useState("");
 
   const salesQueryArgs = useMemo(() => {
     const args = { limit: 300 };
@@ -57,6 +73,28 @@ export function DashboardPage({ user, onLogout }) {
     return args;
   }, [salesPeriod, salesDateFrom, salesDateTo]);
 
+  const returnsQueryArgs = useMemo(() => {
+    const args = { limit: 500 };
+    if (returnsPeriod && returnsPeriod !== "all") args.period = returnsPeriod;
+    if (returnsDateFrom) args.from = returnsDateFrom;
+    if (returnsDateTo) args.to = returnsDateTo;
+    return args;
+  }, [returnsPeriod, returnsDateFrom, returnsDateTo]);
+
+  const homeSalesQueryArgs = useMemo(() => {
+    const args = { limit: 500, period: "all" };
+    if (homeDateFrom) args.from = homeDateFrom;
+    if (homeDateTo) args.to = homeDateTo;
+    return args;
+  }, [homeDateFrom, homeDateTo]);
+
+  const homeReturnsQueryArgs = useMemo(() => {
+    const args = { limit: 500, period: "all" };
+    if (homeDateFrom) args.from = homeDateFrom;
+    if (homeDateTo) args.to = homeDateTo;
+    return args;
+  }, [homeDateFrom, homeDateTo]);
+
   const { data: overviewRes, error: overviewError, refetch: refetchOverview } = useGetOverviewQuery();
   const { data: categoriesRes, error: categoriesError, refetch: refetchCategories } = useGetCategoriesQuery();
   const { data: suppliersRes, error: suppliersError, refetch: refetchSuppliers } = useGetSuppliersQuery();
@@ -64,6 +102,12 @@ export function DashboardPage({ user, onLogout }) {
   const { data: expensesRes, error: expensesError, refetch: refetchExpenses } = useGetExpensesQuery();
   const { data: usersRes, error: usersError, refetch: refetchUsers } = useGetUsersQuery(undefined, { skip: user?.role !== "admin" });
   const { data: salesRes, error: salesError, isLoading: salesLoading } = useGetSalesQuery(salesQueryArgs, { skip: user?.role !== "admin" });
+  const { data: returnsRes, error: returnsError, isLoading: returnsLoading } = useGetSaleReturnsQuery(returnsQueryArgs, { skip: user?.role !== "admin" });
+  const { data: settingsRes, error: settingsError, refetch: refetchSettings } = useGetSettingsQuery();
+  const { data: customersRes, error: customersError, refetch: refetchCustomers } = useGetCustomersQuery(undefined, { skip: user?.role !== "admin" });
+  const { data: homeSalesRes } = useGetSalesQuery(homeSalesQueryArgs, { skip: user?.role !== "admin" });
+  const { data: homeReturnsRes } = useGetSaleReturnsQuery(homeReturnsQueryArgs, { skip: user?.role !== "admin" });
+  const [fetchCustomerLedger] = useLazyGetCustomerLedgerQuery();
   const [fetchSupplierFinance] = useLazyGetSupplierFinanceQuery();
 
   const [createCategory, { isLoading: creatingCategory }] = useCreateCategoryMutation();
@@ -77,8 +121,10 @@ export function DashboardPage({ user, onLogout }) {
   const [deleteProductMutation] = useDeleteProductMutation();
   const [restockProduct, { isLoading: restocking }] = useRestockProductMutation();
   const [paySupplierDebt, { isLoading: payingSupplier }] = usePaySupplierDebtMutation();
+  const [payCustomerDebt, { isLoading: payingCustomer }] = usePayCustomerDebtMutation();
   const [createExpense, { isLoading: creatingExpense }] = useCreateExpenseMutation();
   const [updateExpense, { isLoading: updatingExpense }] = useUpdateExpenseMutation();
+  const [updateSettings, { isLoading: savingSettings }] = useUpdateSettingsMutation();
   const [deleteExpenseMutation] = useDeleteExpenseMutation();
 
   const categories = categoriesRes?.categories || [];
@@ -87,6 +133,11 @@ export function DashboardPage({ user, onLogout }) {
   const products = productsRes?.products || [];
   const expenses = expensesRes?.expenses || [];
   const sales = salesRes?.sales || [];
+  const returns = returnsRes?.returns || [];
+  const customers = customersRes?.customers || [];
+  const customersSummary = customersRes?.summary || { totalCustomers: 0, activeDebtors: 0, totalDebt: 0, totalPaid: 0 };
+  const homeSales = homeSalesRes?.sales || [];
+  const homeReturns = homeReturnsRes?.returns || [];
   const salesSummary = salesRes?.summary || {
     totalSales: 0,
     totalRevenue: 0,
@@ -95,7 +146,52 @@ export function DashboardPage({ user, onLogout }) {
     totalClick: 0,
     totalProfit: 0
   };
+  const homeSalesSummary = homeSalesRes?.summary || {
+    totalSales: 0,
+    totalRevenue: 0,
+    totalCash: 0,
+    totalCard: 0,
+    totalClick: 0,
+    totalProfit: 0
+  };
+  const returnsSummary = returnsRes?.summary || {
+    totalReturns: 0,
+    totalReturnedAmount: 0,
+    totalReturnedCash: 0,
+    totalReturnedCard: 0,
+    totalReturnedClick: 0,
+    totalReturnedQty: 0
+  };
+  const homeReturnsSummary = homeReturnsRes?.summary || {
+    totalReturns: 0,
+    totalReturnedAmount: 0,
+    totalReturnedCash: 0,
+    totalReturnedCard: 0,
+    totalReturnedClick: 0,
+    totalReturnedQty: 0
+  };
   const overview = overviewRes || null;
+  const settings = settingsRes?.settings || {
+    lowStockThreshold: 5,
+    usdRate: 12171,
+    keyboardEnabled: true,
+    receipt: {
+      title: "CHEK",
+      footer: "Xaridingiz uchun rahmat!",
+      logoUrl: "",
+      fields: {
+        showDate: true,
+        showCashier: true,
+        showPaymentType: true,
+        showCustomer: true,
+        showItemsTable: true,
+        showItemUnitPrice: true,
+        showItemLineTotal: true,
+        showTotal: true,
+        showFooter: true
+      }
+    }
+  };
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [categoryModalError, setCategoryModalError] = useState("");
@@ -128,6 +224,15 @@ export function DashboardPage({ user, onLogout }) {
   const [supplierDebtPurchases, setSupplierDebtPurchases] = useState([]);
   const [supplierPaymentForm, setSupplierPaymentForm] = useState({ amount: "", note: "" });
   const [supplierPaymentError, setSupplierPaymentError] = useState("");
+  const [customerDebtOpen, setCustomerDebtOpen] = useState(false);
+  const [customerDebtLoading, setCustomerDebtLoading] = useState(false);
+  const [customerDebtError, setCustomerDebtError] = useState("");
+  const [customerDebtPaymentError, setCustomerDebtPaymentError] = useState("");
+  const [customerDebtCustomer, setCustomerDebtCustomer] = useState(null);
+  const [customerDebtSales, setCustomerDebtSales] = useState([]);
+  const [customerDebtPayments, setCustomerDebtPayments] = useState([]);
+  const [customerDebtTotals, setCustomerDebtTotals] = useState({ totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+  const [customerDebtForm, setCustomerDebtForm] = useState({ amount: "", note: "" });
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [productModalError, setProductModalError] = useState("");
@@ -138,6 +243,7 @@ export function DashboardPage({ user, onLogout }) {
     categoryId: "",
     supplierId: "",
     purchasePrice: "",
+    priceCurrency: "uzs",
     retailPrice: "",
     wholesalePrice: "",
     paymentType: "naqd",
@@ -157,6 +263,7 @@ export function DashboardPage({ user, onLogout }) {
     supplierId: "",
     quantity: "",
     purchasePrice: "",
+    priceCurrency: "uzs",
     pricingMode: "keep_old",
     retailPrice: "",
     wholesalePrice: "",
@@ -164,12 +271,59 @@ export function DashboardPage({ user, onLogout }) {
     paymentType: "naqd",
     paidAmount: ""
   });
+  const [settingsErrorMsg, setSettingsErrorMsg] = useState("");
+  const [settingsForm, setSettingsForm] = useState({
+    lowStockThreshold: "5",
+    usdRate: "12171",
+    keyboardEnabled: true,
+    receipt: {
+      title: "",
+      footer: "",
+      logoUrl: "",
+      fields: {
+        showDate: true,
+        showCashier: true,
+        showPaymentType: true,
+        showCustomer: true,
+        showItemsTable: true,
+        showItemUnitPrice: true,
+        showItemLineTotal: true,
+        showTotal: true,
+        showFooter: true
+      }
+    }
+  });
 
   useEffect(() => {
-    const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError]
+    if (!settingsRes?.settings) return;
+    setSettingsForm({
+      lowStockThreshold: String(settingsRes.settings.lowStockThreshold ?? 5),
+      usdRate: String(settingsRes.settings.usdRate ?? 12171),
+      keyboardEnabled: Boolean(settingsRes.settings.keyboardEnabled),
+      receipt: {
+        title: settingsRes.settings.receipt?.title || "",
+        footer: settingsRes.settings.receipt?.footer || "",
+        logoUrl: settingsRes.settings.receipt?.logoUrl || "",
+        fields: {
+          showDate: settingsRes.settings.receipt?.fields?.showDate !== false,
+          showCashier: settingsRes.settings.receipt?.fields?.showCashier !== false,
+          showPaymentType: settingsRes.settings.receipt?.fields?.showPaymentType !== false,
+          showCustomer: settingsRes.settings.receipt?.fields?.showCustomer !== false,
+          showItemsTable: settingsRes.settings.receipt?.fields?.showItemsTable !== false,
+          showItemUnitPrice: settingsRes.settings.receipt?.fields?.showItemUnitPrice !== false,
+          showItemLineTotal: settingsRes.settings.receipt?.fields?.showItemLineTotal !== false,
+          showTotal: settingsRes.settings.receipt?.fields?.showTotal !== false,
+          showFooter: settingsRes.settings.receipt?.fields?.showFooter !== false
+        }
+      }
+    });
+  }, [settingsRes]);
+
+  useEffect(() => {
+    const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, returnsError, customersError, settingsError]
       .some((e) => Number(e?.status) === 401);
     if (any401) onLogout();
-  }, [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, onLogout]);
+  }, [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, returnsError, customersError, settingsError, onLogout]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -399,6 +553,88 @@ export function DashboardPage({ user, onLogout }) {
     }
   };
 
+  const openCustomerDebtModal = async (customer) => {
+    setCustomerDebtCustomer(customer);
+    setCustomerDebtOpen(true);
+    setCustomerDebtError("");
+    setCustomerDebtPaymentError("");
+    setCustomerDebtLoading(true);
+    setCustomerDebtForm({ amount: "", note: "" });
+    try {
+      const data = await fetchCustomerLedger(customer._id).unwrap();
+      setCustomerDebtSales(data.sales || []);
+      setCustomerDebtPayments(data.payments || []);
+      setCustomerDebtTotals(data.totals || { totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+    } catch (err) {
+      setCustomerDebtError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+      setCustomerDebtSales([]);
+      setCustomerDebtPayments([]);
+      setCustomerDebtTotals({ totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+    } finally {
+      setCustomerDebtLoading(false);
+    }
+  };
+
+  const closeCustomerDebtModal = () => {
+    setCustomerDebtOpen(false);
+    setCustomerDebtError("");
+    setCustomerDebtPaymentError("");
+    setCustomerDebtForm({ amount: "", note: "" });
+  };
+
+  const submitCustomerDebtPayment = async (e) => {
+    e.preventDefault();
+    if (!customerDebtCustomer) return;
+    setCustomerDebtPaymentError("");
+    try {
+      await payCustomerDebt({
+        id: customerDebtCustomer._id,
+        amount: Number(customerDebtForm.amount),
+        note: customerDebtForm.note
+      }).unwrap();
+      const data = await fetchCustomerLedger(customerDebtCustomer._id).unwrap();
+      setCustomerDebtSales(data.sales || []);
+      setCustomerDebtPayments(data.payments || []);
+      setCustomerDebtTotals(data.totals || { totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+      setCustomerDebtForm({ amount: "", note: "" });
+      await Promise.all([refetchCustomers(), refetchOverview()]);
+    } catch (err) {
+      setCustomerDebtPaymentError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
+  };
+
+  const saveSettings = async (e) => {
+    e.preventDefault();
+    setSettingsErrorMsg("");
+    try {
+      await updateSettings({
+        lowStockThreshold: Number(settingsForm.lowStockThreshold || 0),
+        usdRate: Number(settingsForm.usdRate || 0),
+        keyboardEnabled: Boolean(settingsForm.keyboardEnabled),
+        receipt: {
+          title: settingsForm.receipt.title,
+          footer: settingsForm.receipt.footer,
+          logoUrl: settingsForm.receipt.logoUrl,
+          fields: settingsForm.receipt.fields
+        }
+      }).unwrap();
+      await Promise.all([refetchSettings(), refetchProducts()]);
+    } catch (err) {
+      setSettingsErrorMsg(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
+  };
+
+  const toCurrencyInput = (amount, currency) => {
+    const numeric = Number(amount || 0);
+    if (!Number.isFinite(numeric)) return "";
+    if (currency === "usd") {
+      const rate = Number(settings.usdRate || 12171);
+      const usd = rate > 0 ? numeric / rate : 0;
+      return String(Math.round(usd * 100) / 100);
+    }
+    return String(Math.round(numeric * 100) / 100);
+  };
+
   const openCreateProductModal = () => {
     setProductForm({
       id: "",
@@ -407,6 +643,7 @@ export function DashboardPage({ user, onLogout }) {
       categoryId: categories[0]?._id || "",
       supplierId: suppliers[0]?._id || "",
       purchasePrice: "",
+      priceCurrency: "uzs",
       retailPrice: "",
       wholesalePrice: "",
       paymentType: "naqd",
@@ -423,23 +660,25 @@ export function DashboardPage({ user, onLogout }) {
   };
 
   const openEditProductModal = (p) => {
+    const priceCurrency = p.priceCurrency || "uzs";
     setProductForm({
       id: p._id,
       name: p.name,
       model: p.model,
       categoryId: getCategoryId(p),
       supplierId: getSupplierId(p),
-      purchasePrice: String(p.purchasePrice ?? ""),
-      retailPrice: String(p.retailPrice ?? ""),
-      wholesalePrice: String(p.wholesalePrice ?? ""),
+      purchasePrice: toCurrencyInput(p.purchasePrice, priceCurrency),
+      priceCurrency,
+      retailPrice: toCurrencyInput(p.retailPrice, priceCurrency),
+      wholesalePrice: toCurrencyInput(p.wholesalePrice, priceCurrency),
       paymentType: p.paymentType || "naqd",
-      paidAmount: String(p.paidAmount ?? ""),
+      paidAmount: toCurrencyInput(p.paidAmount, priceCurrency),
       quantity: String(p.quantity ?? ""),
       unit: p.unit || "dona",
       allowPieceSale: Boolean(p.allowPieceSale),
       pieceUnit: String(p.pieceUnit || "kg").toLowerCase(),
       pieceQtyPerBase: String(p.pieceQtyPerBase ?? ""),
-      piecePrice: String(p.piecePrice ?? "")
+      piecePrice: toCurrencyInput(p.piecePrice, priceCurrency)
     });
     setProductModalError("");
     setProductModalOpen(true);
@@ -455,6 +694,7 @@ export function DashboardPage({ user, onLogout }) {
         categoryId: productForm.categoryId,
         supplierId: productForm.supplierId,
         purchasePrice: Number(productForm.purchasePrice),
+        priceCurrency: productForm.priceCurrency,
         retailPrice: Number(productForm.retailPrice),
         wholesalePrice: Number(productForm.wholesalePrice),
         paymentType: productForm.paymentType,
@@ -488,16 +728,18 @@ export function DashboardPage({ user, onLogout }) {
   };
 
   const openRestockModal = (product) => {
+    const priceCurrency = product.priceCurrency || "uzs";
     setRestockTarget(product);
     setRestockModalError("");
     setRestockForm({
       supplierId: getSupplierId(product),
       quantity: "",
-      purchasePrice: String(product.purchasePrice || ""),
+      purchasePrice: toCurrencyInput(product.purchasePrice, priceCurrency),
+      priceCurrency,
       pricingMode: "keep_old",
-      retailPrice: String(product.retailPrice || ""),
-      wholesalePrice: String(product.wholesalePrice || ""),
-      piecePrice: String(product.piecePrice || ""),
+      retailPrice: toCurrencyInput(product.retailPrice, priceCurrency),
+      wholesalePrice: toCurrencyInput(product.wholesalePrice, priceCurrency),
+      piecePrice: toCurrencyInput(product.piecePrice, priceCurrency),
       paymentType: "naqd",
       paidAmount: ""
     });
@@ -514,6 +756,7 @@ export function DashboardPage({ user, onLogout }) {
         supplierId: restockForm.supplierId,
         quantity: Number(restockForm.quantity),
         purchasePrice: Number(restockForm.purchasePrice),
+        priceCurrency: restockForm.priceCurrency,
         pricingMode: restockForm.pricingMode,
         retailPrice: Number(restockForm.retailPrice),
         wholesalePrice: Number(restockForm.wholesalePrice),
@@ -541,26 +784,86 @@ export function DashboardPage({ user, onLogout }) {
           openCreateProductModal={openCreateProductModal}
           openCreateExpenseModal={openCreateExpenseModal}
           openCreateUserModal={openCreateUserModal}
+          theme={theme}
+          onToggleTheme={() => setTheme((p) => (p === "dark" ? "light" : "dark"))}
         />
 
-        <section className="panel panel-row">
-          <input className="search-input" placeholder="Qidirish..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          {activeSection === "Mahsulotlar" ? (
-            <select className="search-input" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="all">Barcha kategoriyalar</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>{c.name}</option>
-              ))}
-            </select>
-          ) : (
-            <div />
-          )}
-        </section>
+        {activeSection !== "Sotuv tarixi" && activeSection !== "Qaytarib olish" && activeSection !== "Bosh sahifa" && activeSection !== "Clientlar" && activeSection !== "Sozlamalar" ? (
+          <section className="panel panel-row">
+            <input className="search-input" placeholder="Qidirish..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            {activeSection === "Mahsulotlar" ? (
+              <select className="search-input" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                <option value="all">Barcha kategoriyalar</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
+                ))}
+              </select>
+            ) : (
+              <div />
+            )}
+          </section>
+        ) : null}
 
-        {activeSection === "Mahsulotlar" ? (
-          <ProductsSection products={filteredProducts} onRestock={openRestockModal} onEdit={openEditProductModal} onDelete={deleteProduct} />
+        {activeSection === "Bosh sahifa" ? (
+          <HomeSection
+            overview={overview}
+            products={products}
+            suppliers={suppliers}
+            expenses={expenses}
+            sales={homeSales}
+            salesSummary={homeSalesSummary}
+            returns={homeReturns}
+            returnsSummary={homeReturnsSummary}
+            dateFrom={homeDateFrom}
+            dateTo={homeDateTo}
+            setDateFrom={setHomeDateFrom}
+            setDateTo={setHomeDateTo}
+            search={search}
+            setSearch={setSearch}
+          />
+        ) : activeSection === "Mahsulotlar" ? (
+          <ProductsSection
+            products={filteredProducts}
+            lowStockThreshold={Number(settings.lowStockThreshold || 0)}
+            onRestock={openRestockModal}
+            onEdit={openEditProductModal}
+            onDelete={deleteProduct}
+          />
         ) : activeSection === "Yetkazib beruvchilar" ? (
           <SuppliersSection suppliers={filteredSuppliers} onOpenPayment={openSupplierPaymentModal} onOpenHistory={openSupplierHistory} onEdit={openEditSupplierModal} onDelete={deleteSupplier} />
+        ) : activeSection === "Clientlar" ? (
+          <CustomersSection customers={customers} summary={customersSummary} search={search} setSearch={setSearch} onOpenLedger={openCustomerDebtModal} />
+        ) : activeSection === "Sozlamalar" ? (
+          <SettingsSection
+            form={settingsForm}
+            setForm={setSettingsForm}
+            saving={savingSettings}
+            error={settingsErrorMsg}
+            onSave={saveSettings}
+            onReset={() =>
+              setSettingsForm({
+                lowStockThreshold: String(settings.lowStockThreshold ?? 5),
+                usdRate: String(settings.usdRate ?? 12171),
+                keyboardEnabled: Boolean(settings.keyboardEnabled),
+                receipt: {
+                  title: settings.receipt?.title || "",
+                  footer: settings.receipt?.footer || "",
+                  logoUrl: settings.receipt?.logoUrl || "",
+                  fields: {
+                    showDate: settings.receipt?.fields?.showDate !== false,
+                    showCashier: settings.receipt?.fields?.showCashier !== false,
+                    showPaymentType: settings.receipt?.fields?.showPaymentType !== false,
+                    showCustomer: settings.receipt?.fields?.showCustomer !== false,
+                    showItemsTable: settings.receipt?.fields?.showItemsTable !== false,
+                    showItemUnitPrice: settings.receipt?.fields?.showItemUnitPrice !== false,
+                    showItemLineTotal: settings.receipt?.fields?.showItemLineTotal !== false,
+                    showTotal: settings.receipt?.fields?.showTotal !== false,
+                    showFooter: settings.receipt?.fields?.showFooter !== false
+                  }
+                }
+              })
+            }
+          />
         ) : activeSection === "Xarajatlar" ? (
           <ExpensesSection expenses={filteredExpenses} onEdit={openEditExpenseModal} onDelete={deleteExpense} />
         ) : activeSection === "Sotuv tarixi" ? (
@@ -570,12 +873,28 @@ export function DashboardPage({ user, onLogout }) {
             loading={salesLoading}
             error={salesError}
             search={search}
+            setSearch={setSearch}
             period={salesPeriod}
             setPeriod={setSalesPeriod}
             dateFrom={salesDateFrom}
             dateTo={salesDateTo}
             setDateFrom={setSalesDateFrom}
             setDateTo={setSalesDateTo}
+          />
+        ) : activeSection === "Qaytarib olish" ? (
+          <ReturnsSection
+            returns={returns}
+            summary={returnsSummary}
+            loading={returnsLoading}
+            error={returnsError}
+            search={search}
+            setSearch={setSearch}
+            period={returnsPeriod}
+            setPeriod={setReturnsPeriod}
+            dateFrom={returnsDateFrom}
+            dateTo={returnsDateTo}
+            setDateFrom={setReturnsDateFrom}
+            setDateTo={setReturnsDateTo}
           />
         ) : activeSection === "Xodimlar" ? (
           <UsersSection users={filteredUsers} onEdit={openEditUserModal} />
@@ -617,6 +936,7 @@ export function DashboardPage({ user, onLogout }) {
         error={productModalError}
         categories={categories}
         suppliers={suppliers}
+        usdRate={Number(settings.usdRate || 12171)}
         openCreateSupplierModal={openCreateSupplierModal}
       />
 
@@ -676,6 +996,22 @@ export function DashboardPage({ user, onLogout }) {
         error={restockModalError}
         suppliers={suppliers}
         product={restockTarget}
+        usdRate={Number(settings.usdRate || 12171)}
+      />
+      <CustomerDebtModal
+        open={customerDebtOpen}
+        customer={customerDebtCustomer}
+        sales={customerDebtSales}
+        payments={customerDebtPayments}
+        totals={customerDebtTotals}
+        form={customerDebtForm}
+        setForm={setCustomerDebtForm}
+        loading={customerDebtLoading}
+        payLoading={payingCustomer}
+        error={customerDebtError}
+        paymentError={customerDebtPaymentError}
+        onPay={submitCustomerDebtPayment}
+        onClose={closeCustomerDebtModal}
       />
     </main>
   );

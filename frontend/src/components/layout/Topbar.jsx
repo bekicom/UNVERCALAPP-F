@@ -6,7 +6,9 @@ export function Topbar({
   openCreateSupplierModal,
   openCreateProductModal,
   openCreateExpenseModal,
-  openCreateUserModal
+  openCreateUserModal,
+  theme,
+  onToggleTheme
 }) {
   return (
     <header className="topbar">
@@ -27,6 +29,9 @@ export function Topbar({
         ) : (
           <div />
         )}
+        <button type="button" className="theme-toggle-btn" onClick={onToggleTheme}>
+          {theme === "dark" ? "Kunduz" : "Kechki"}
+        </button>
       </div>
     </header>
   );
