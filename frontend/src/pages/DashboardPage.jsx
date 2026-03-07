@@ -54,6 +54,7 @@ import { getCategoryId, getCategoryName, getSupplierName, getSupplierId, toDateI
 
 export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () => {}, keyboardEnabled = true }) {
   const [activeSection, setActiveSection] = useState("Mahsulotlar");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [salesPeriod, setSalesPeriod] = useState("today");
@@ -773,7 +774,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   };
 
   return (
-    <main className="dashboard-page">
+    <main className={`dashboard-page ${sidebarOpen ? "" : "sidebar-collapsed"}`.trim()}>
       <Sidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} onLogout={onLogout} />
 
       <section className="workspace">
@@ -786,6 +787,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
           openCreateUserModal={openCreateUserModal}
           theme={theme}
           onToggleTheme={() => setTheme((p) => (p === "dark" ? "light" : "dark"))}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         />
 
         {activeSection !== "Sotuv tarixi" && activeSection !== "Qaytarib olish" && activeSection !== "Bosh sahifa" && activeSection !== "Clientlar" && activeSection !== "Sozlamalar" ? (

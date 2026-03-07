@@ -1,6 +1,13 @@
 import { PRODUCT_UNITS } from "../../constants/ui";
 import { formatMoney } from "../../utils/format";
 
+function normalizeDecimalInput(value) {
+  return String(value ?? "")
+    .replace(/,/g, ".")
+    .replace(/[^0-9.]/g, "")
+    .replace(/(\..*?)\./g, "$1");
+}
+
 export function ProductModal({
   open,
   loading,
@@ -151,12 +158,12 @@ export function ProductModal({
             <label>
               Kelish narxi
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={form.purchasePrice}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, purchasePrice: e.target.value }))
+                  setForm((p) => ({ ...p, purchasePrice: normalizeDecimalInput(e.target.value) }))
                 }
                 required
               />
@@ -166,12 +173,12 @@ export function ProductModal({
                 ? "Qop narxi (chakana)"
                 : "Dona narxi (chakana)"}
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={form.retailPrice}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, retailPrice: e.target.value }))
+                  setForm((p) => ({ ...p, retailPrice: normalizeDecimalInput(e.target.value) }))
                 }
                 required
               />
@@ -179,12 +186,12 @@ export function ProductModal({
             <label>
               {form.unit === "qop" ? "Qop narxi (optom)" : "Optom narxi"}
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={form.wholesalePrice}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, wholesalePrice: e.target.value }))
+                  setForm((p) => ({ ...p, wholesalePrice: normalizeDecimalInput(e.target.value) }))
                 }
                 required
               />
@@ -215,13 +222,12 @@ export function ProductModal({
               <label>
                 Hozir to'langan summa
                 <input
-                  type="number"
-                  min="0"
-                  max={totalPurchaseCost}
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
                   value={form.paidAmount}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, paidAmount: e.target.value }))
+                    setForm((p) => ({ ...p, paidAmount: normalizeDecimalInput(e.target.value) }))
                   }
                   required
                 />
@@ -259,14 +265,14 @@ export function ProductModal({
                   <label>
                     1 qop ichida nechta {form.pieceUnit}
                     <input
-                      type="number"
-                      min="0"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
                       value={form.pieceQtyPerBase}
                       onChange={(e) =>
                         setForm((p) => ({
                           ...p,
-                          pieceQtyPerBase: e.target.value,
+                          pieceQtyPerBase: normalizeDecimalInput(e.target.value),
                         }))
                       }
                       required
@@ -279,12 +285,12 @@ export function ProductModal({
                   <label>
                     1 {form.pieceUnit} sotish narxi
                     <input
-                      type="number"
-                      min="0"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
                       value={form.piecePrice}
                       onChange={(e) =>
-                        setForm((p) => ({ ...p, piecePrice: e.target.value }))
+                        setForm((p) => ({ ...p, piecePrice: normalizeDecimalInput(e.target.value) }))
                       }
                       required
                     />

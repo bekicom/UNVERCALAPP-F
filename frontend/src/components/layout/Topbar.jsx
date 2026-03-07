@@ -8,11 +8,18 @@ export function Topbar({
   openCreateExpenseModal,
   openCreateUserModal,
   theme,
-  onToggleTheme
+  onToggleTheme,
+  sidebarOpen,
+  onToggleSidebar
 }) {
   return (
     <header className="topbar">
-      <h1>{activeSection}</h1>
+      <div className="topbar-main">
+        <button type="button" className="icon-btn sidebar-toggle-btn" onClick={onToggleSidebar} aria-label={sidebarOpen ? "Sidebarni yopish" : "Sidebarni ochish"}>
+          <Icon name="menu" />
+        </button>
+        <h1>{activeSection}</h1>
+      </div>
       <div className="toolbar-actions">
         {activeSection === "Mahsulotlar" ? (
           <>

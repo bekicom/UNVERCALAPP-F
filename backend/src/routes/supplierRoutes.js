@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Router } from "express";
 import { authMiddleware } from "../authMiddleware.js";
 import { Supplier } from "../models/Supplier.js";
@@ -13,11 +14,21 @@ function roundMoney(value) {
   return Math.round(Number(value) * 100) / 100;
 }
 
+function normalizeObjectId(value) {
+  if (value instanceof mongoose.Types.ObjectId) return value;
+  if (typeof value === "string" && mongoose.Types.ObjectId.isValid(value)) {
+    return new mongoose.Types.ObjectId(value);
+  }
+  return value;
+}
+
 router.get("/", authMiddleware, async (req, res) => {
   const suppliers = await Supplier.find(tenantFilter(req)).sort({ name: 1 }).lean();
+  const supplierIds = suppliers.map((s) => normalizeObjectId(s._id)).filter(Boolean);
+  const tenantId = normalizeObjectId(req.user.tenantId);
 
-  const stats = await Purchase.aggregate([
-    { $match: tenantFilter(req, { supplierId: { $ne: null } }) },
+  const stats = supplierIds.length > 0 ? await Purchase.aggregate([
+    { $match: { tenantId, supplierId: { $in: supplierIds } } },
     {
       $group: {
         _id: "$supplierId",
@@ -53,7 +64,7 @@ router.get("/", authMiddleware, async (req, res) => {
         }
       }
     }
-  ]);
+  ]) : [];
 
   const statsMap = new Map(stats.map((s) => [String(s._id), s]));
   const result = suppliers.map((s) => {
@@ -78,12 +89,14 @@ router.get("/:id/purchases", authMiddleware, async (req, res) => {
   const { id } = req.params;
   const supplier = await Supplier.findOne(tenantFilter(req, { _id: id })).lean();
   if (!supplier) return res.status(404).json({ message: "Yetkazib beruvchi topilmadi" });
+  const tenantId = normalizeObjectId(supplier.tenantId);
+  const supplierId = normalizeObjectId(supplier._id);
 
-  const purchases = await Purchase.find(tenantFilter(req, { supplierId: id })).sort({ purchasedAt: -1 }).lean();
-  const payments = await SupplierPayment.find(tenantFilter(req, { supplierId: id })).sort({ paidAt: -1 }).lean();
+  const purchases = await Purchase.find({ tenantId, supplierId }).sort({ purchasedAt: -1 }).lean();
+  const payments = await SupplierPayment.find({ tenantId, supplierId }).sort({ paidAt: -1 }).lean();
 
   const daily = await Purchase.aggregate([
-    { $match: tenantFilter(req, { supplierId: supplier._id }) },
+    { $match: { tenantId, supplierId } },
     {
       $group: {
         _id: { $dateToString: { format: "%Y-%m-%d", date: "$purchasedAt" } },

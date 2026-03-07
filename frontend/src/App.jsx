@@ -18,7 +18,12 @@ export default function App() {
   }, [theme]);
 
   if (!token || !user) {
-    return <LoginPage onLogin={login} />;
+    return (
+      <>
+        <LoginPage onLogin={login} />
+        <TouchKeyboard enabled />
+      </>
+    );
   }
 
   if (user.role === "cashier" || user.role === "kassa") {

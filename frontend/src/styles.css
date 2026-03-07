@@ -5,7 +5,7 @@
 }
 
 .settings-shell {
-  height: 100%;
+  height: 92vh;
   border-radius: 24px;
   padding: 16px;
   border: 1px solid rgba(108, 159, 255, 0.35);
@@ -17,10 +17,15 @@
 }
 
 .settings-wrap {
-  max-width: 980px;
+  max-width: 1920px;
+  width: 100%;
   margin: 0 auto;
   display: grid;
   gap: 12px;
+  display: flex;
+  align-items: start;
+  justify-content: center;
+
 }
 
 .settings-head {
@@ -54,6 +59,7 @@
     radial-gradient(1000px 380px at 35% 15%, rgba(141, 192, 255, 0.11), transparent 70%),
     linear-gradient(180deg, rgba(21, 40, 85, 0.9), rgba(13, 29, 68, 0.94));
   box-shadow: inset 0 0 0 1px rgba(104, 145, 222, 0.08), 0 8px 20px rgba(3, 10, 28, 0.35);
+  
 }
 
 .settings-card h3 {
@@ -97,6 +103,7 @@
   gap: 12px;
   color: #d9e5ff;
   font-size: 20px;
+
 }
 
 .settings-toggle-label input[type="checkbox"] {
@@ -339,18 +346,39 @@
 
 @media (max-width: 1100px) {
   .settings-head h2 {
-    font-size: 34px;
+    font-size: 28px;
   }
 
   .settings-card h3 {
-    font-size: 28px;
+    font-size: 22px;
   }
 
   .settings-row p,
   .settings-toggle-label,
   .settings-field-grid label,
   .settings-field-grid input {
-    font-size: 22px;
+    font-size: 17px;
+  }
+
+  .settings-row input[type="number"] {
+    width: 112px;
+    font-size: 17px;
+  }
+
+  .settings-field-grid label {
+    grid-template-columns: minmax(140px, 210px) 1fr;
+  }
+
+  .settings-receipt-fields-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
+  .receipt-preview-paper h5 {
+    font-size: 20px;
+  }
+
+  .receipt-preview-paper strong {
+    font-size: 20px;
   }
 }
 
@@ -361,20 +389,55 @@
   }
 
   .settings-head h2 {
-    font-size: 26px;
+    font-size: 22px;
+  }
+
+  .settings-card h3 {
+    padding: 12px 14px;
+    font-size: 18px;
   }
 
   .settings-row {
     flex-direction: column;
     align-items: flex-start;
+    padding: 12px 14px;
+  }
+
+  .settings-row p,
+  .settings-toggle-label {
+    font-size: 15px;
+  }
+
+  .settings-row input[type="number"] {
+    width: 100%;
+    max-width: none;
+    font-size: 16px;
   }
 
   .settings-field-grid label {
     grid-template-columns: 1fr;
+    font-size: 15px;
+  }
+
+  .settings-field-grid input {
+    min-height: 40px;
+    font-size: 15px;
+  }
+
+  .settings-receipt-fields,
+  .settings-receipt-preview,
+  .settings-field-grid {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .settings-receipt-fields-grid {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .settings-receipt-fields-grid label {
+    font-size: 13px;
   }
 
   .settings-actions {
@@ -385,6 +448,25 @@
   .settings-actions button {
     flex: 1;
     justify-content: center;
+  }
+
+  .receipt-preview-paper {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .receipt-preview-paper h5 {
+    font-size: 18px;
+  }
+
+  .receipt-preview-paper p,
+  .receipt-preview-paper th,
+  .receipt-preview-paper td {
+    font-size: 11px;
+  }
+
+  .receipt-preview-paper strong {
+    font-size: 18px;
   }
 }
 
@@ -626,6 +708,9 @@ button.ghost {
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
+  min-width: 0;
+  overflow: hidden;
+  transition: transform 0.24s ease, opacity 0.24s ease, padding 0.24s ease, border-color 0.24s ease;
 }
 
 .sidebar-top {
@@ -687,6 +772,8 @@ button.ghost {
   grid-template-rows: auto auto 1fr auto;
   gap: 10px;
   background: #0a1328;
+  min-width: 0;
+  transition: padding 0.24s ease;
 }
 
 .topbar {
@@ -698,6 +785,58 @@ button.ghost {
   padding: 0 12px;
   background: #081024;
   border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.topbar-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+}
+
+.dashboard-page.sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.dashboard-page.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  padding-left: 0;
+  padding-right: 0;
+  border-right-color: transparent;
+}
+
+.dashboard-page.sidebar-collapsed .workspace {
+  padding: 10px;
+}
+
+.dashboard-page.sidebar-collapsed .topbar h1,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-topbar h2,
+.dashboard-page.sidebar-collapsed .salesx-header h2 {
+  font-size: 24px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi strong,
+.dashboard-page.sidebar-collapsed .salesx-card strong,
+.dashboard-page.sidebar-collapsed .sales-stat-card strong,
+.dashboard-page.sidebar-collapsed .salesv2-kpi strong,
+.dashboard-page.sidebar-collapsed .card p {
+  font-size: 18px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel h3,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel .big,
+.dashboard-page.sidebar-collapsed .salesx-card p,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi span,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi small {
+  font-size: 11px;
 }
 
 .toolbar-actions {
@@ -1992,6 +2131,10 @@ th {
   gap: 10px;
 }
 
+.homex-mid > .homex-panel {
+  min-width: 0;
+}
+
 .homex-wrap.v2 .homex-panel {
   background: linear-gradient(165deg, rgba(17, 34, 72, 0.95), rgba(10, 24, 53, 0.95));
   border: 1px solid rgba(120, 153, 201, 0.25);
@@ -2106,7 +2249,7 @@ th {
   width: 100%;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 220px 1fr 430px;
+  grid-template-columns: 220px 1fr 560px;
   background: #101722;
   color: #e8eff8;
 }
@@ -2210,8 +2353,44 @@ th {
   font-size: 12px;
 }
 
+.cashier-price-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.cashier-price-input {
+  min-width: 64px;
+  width: 64px;
+  padding: 7px 10px;
+  font-size: 13px;
+  text-align: right;
+}
+
+.cashier-price-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.cashier-price-switch button {
+  min-height: 28px;
+  min-width: 62px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  justify-content: center;
+  font-size: 12px;
+  background: rgba(38, 50, 70, 0.9);
+  border: 1px solid rgba(131, 151, 176, 0.24);
+}
+
+.cashier-price-switch button.active {
+  background: linear-gradient(135deg, #0eacb4, #0f766e);
+  border-color: rgba(83, 241, 234, 0.45);
+}
+
 .cashier-right {
-  padding: 14px;
+  padding: 4px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto auto;
   gap: 12px;
@@ -2239,10 +2418,10 @@ th {
   table-layout: auto;
 }
 
-.cashier-col-product { width: 30%; }
-.cashier-col-price { width: 16%; }
-.cashier-col-qty { width: 30%; }
-.cashier-col-sum { width: 16%; }
+.cashier-col-product { width: 22%; }
+.cashier-col-price { width: 34%; }
+.cashier-col-qty { width: 22%; }
+.cashier-col-sum { width: 14%; }
 .cashier-col-del { width: 8%; }
 
 .cashier-cart-table th {
@@ -2251,8 +2430,8 @@ th {
 
 .cashier-cart-table th,
 .cashier-cart-table td {
-  padding: 10px 8px;
-  font-size: 12px;
+  padding: 12px 10px;
+  font-size: 13px;
   border-bottom: 1px solid rgba(117, 136, 160, 0.3);
   color: #e2ebf7;
   vertical-align: middle;
@@ -2264,20 +2443,20 @@ th {
 
 .cashier-qty {
   display: inline-grid;
-  grid-template-columns: 20px 50px 20px auto;
+  grid-template-columns: 24px 58px 24px auto;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
 }
 
 .cashier-qty button {
-  width: 22px;
-  height: 22px;
-  min-width: 20px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   padding: 0;
   border-radius: 5px;
   background: #334154;
-  font-size: 12px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2287,25 +2466,25 @@ th {
 }
 
 .cashier-qty input {
-  width: 50px;
-  padding: 4px 4px;
+  width: 58px;
+  padding: 5px 6px;
   text-align: center;
   border-radius: 6px;
   background: #111a26;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .cashier-qty-unit {
-  font-size: 10px;
+  font-size: 11px;
   color: #bcd0e8;
   font-weight: 600;
   min-width: 20px;
 }
 
 .cashier-del-btn {
-  width: 22px;
-  min-width: 22px;
-  height: 26px;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
   border-radius: 7px;
   background: linear-gradient(135deg, #dc2626, #b91c1c);
   font-weight: 700;
@@ -2336,6 +2515,8 @@ th {
   border: 1px solid #2c3f5f;
   color: #dce8ff;
   justify-content: center;
+  height: 56px;
+  font-size: 20px !important;
 }
 
 .cashier-pay-types button:nth-child(4) {
@@ -2411,7 +2592,7 @@ th {
 }
 
 .cashier-total strong {
-  font-size: 28px;
+  font-size: 38px;
 }
 
 .cashier-sell-btn {
@@ -2847,6 +3028,1092 @@ html[data-theme="light"] .touchkbd-card {
   }
 }
 
+@media (max-width: 1600px), (max-height: 1000px) {
+  .dashboard-page {
+    grid-template-columns: 220px 1fr;
+  }
+
+  .sidebar {
+    padding: 10px 8px;
+    gap: 8px;
+  }
+
+  .badge {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .sidebar-title {
+    font-size: 18px;
+    margin: 10px 0 16px;
+  }
+
+  .menu {
+    gap: 5px;
+  }
+
+  .menu-btn {
+    height: 40px;
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .workspace {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .topbar {
+    height: 38px;
+    padding: 0 8px;
+  }
+
+  .topbar h1 {
+    font-size: 17px;
+  }
+
+  .toolbar-actions {
+    gap: 5px;
+  }
+
+  .toolbar-actions button,
+  .theme-toggle-btn {
+    min-height: 32px;
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .panel,
+  .sales-tools,
+  .salesv2-filters,
+  .salesx-filter,
+  .homex-wrap,
+  .homex-wrap.v2,
+  .cashier-pay,
+  .cashier-total,
+  .settings-shell {
+    padding: 6px;
+  }
+
+  .search-input,
+  .salesx-search input,
+  .cashier-search,
+  .homex-search,
+  input,
+  select,
+  button {
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 9px 9px;
+    font-size: 12px;
+  }
+
+  .action-btn {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .modal-card {
+    padding: 12px;
+  }
+
+  .modal-card h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .history-item,
+  .piece-box,
+  .salesv2-item,
+  .sales-stat-card,
+  .homex-panel,
+  .card {
+    padding: 8px;
+  }
+
+  .sales-mini-card {
+    min-height: 62px;
+    padding: 8px;
+  }
+
+  .sales-mini-card h2,
+  .salesv2-kpi p,
+  .sales-stat-card p,
+  .sales-tools-note,
+  .salesv2-search-note,
+  .salesx-card p,
+  .homex-wrap.v2 .homex-topbar p,
+  .homex-debt-totals p,
+  .homex-event p,
+  .customer-kpi p,
+  .customer-kpi small {
+    font-size: 11px;
+  }
+
+  .sales-mini-card p,
+  .salesv2-kpi strong,
+  .sales-stat-card strong,
+  .card p,
+  .homex-kpi strong {
+    font-size: 16px;
+  }
+
+  .sales-filter-buttons,
+  .salesv2-periods,
+  .sales-tools-periods {
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+    gap: 6px;
+  }
+
+  .sales-filter-buttons button,
+  .salesv2-periods button,
+  .sales-tools-periods button {
+    min-height: 28px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .salesx-header {
+    padding: 6px;
+    gap: 8px;
+  }
+
+  .salesx-header h2 {
+    font-size: 22px;
+  }
+
+  .salesx-search input {
+    height: 36px;
+  }
+
+  .salesx-cards {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .salesx-card {
+    min-height: 58px;
+    padding: 7px 8px;
+  }
+
+  .salesx-card strong {
+    margin-top: 3px;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .salesx-card p {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  .salesx-pay-badge,
+  .sales-pay-badge,
+  .salesv2-tags span,
+  .salesv2-products span {
+    font-size: 10px;
+  }
+
+  .homex-head {
+    padding: 8px;
+  }
+
+  .homex-head h2,
+  .homex-wrap.v2 .homex-topbar h2 {
+    font-size: 22px;
+  }
+
+  .homex-kpis {
+    grid-template-columns: repeat(4, minmax(110px, 1fr));
+  }
+
+  .homex-kpis.v2 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .homex-kpis.v2 .homex-kpi,
+  .homex-kpi {
+    min-height: 78px;
+    padding: 8px;
+  }
+
+  .homex-kpis.v2 .homex-kpi {
+    min-height: 62px;
+    padding: 7px 8px;
+  }
+
+  .homex-kpi-title {
+    gap: 4px;
+  }
+
+  .homex-kpi-title .icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .homex-kpis.v2 .homex-kpi .homex-kpi-title,
+  .homex-kpis.v2 .homex-kpi small,
+  .homex-kpis.v2 .homex-kpi span {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .homex-kpis.v2 .homex-kpi strong {
+    margin-top: 3px;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .homex-grid,
+  .homex-mid {
+    gap: 8px;
+  }
+
+  .homex-mid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .homex-wrap.v2 .homex-panel h3 {
+    font-size: 20px;
+  }
+
+  .homex-wrap.v2 .homex-panel .big {
+    font-size: 18px;
+  }
+
+  .homex-list,
+  .homex-bars {
+    gap: 6px;
+  }
+
+  .homex-row,
+  .homex-event,
+  .homex-foot-card {
+    padding: 6px 8px;
+  }
+
+  .homex-foot-card strong,
+  .homex-foot-card span {
+    font-size: 13px;
+  }
+
+  .customer-modal {
+    width: min(1080px, 95vw);
+  }
+
+  .customer-modal-head {
+    padding: 12px 16px 8px;
+  }
+
+  .customer-modal-head h3 {
+    font-size: 22px;
+  }
+
+  .customer-modal-close {
+    font-size: 24px;
+  }
+
+  .customer-modal-body {
+    padding: 12px 16px 16px;
+  }
+
+  .customer-modal-date {
+    font-size: 20px;
+  }
+
+  .customer-kpi {
+    padding: 10px;
+  }
+
+  .customer-kpi strong {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .customer-pay-field,
+  .customer-pay-totals p {
+    font-size: 11px;
+  }
+
+  .customer-pay-field input,
+  .customer-pay-quick button,
+  .customer-pay-submit {
+    height: 34px;
+  }
+
+  .settings-shell {
+    border-radius: 16px;
+  }
+
+  .settings-wrap {
+    max-width: 100%;
+    gap: 8px;
+  }
+
+  .settings-head h2 {
+    font-size: 18px;
+  }
+
+  .settings-head button,
+  .settings-actions button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .settings-card h3 {
+    padding: 10px 12px;
+    font-size: 17px;
+  }
+
+  .settings-row,
+  .settings-field-grid,
+  .settings-receipt-fields,
+  .settings-receipt-preview {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .settings-row {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .settings-row p,
+  .settings-toggle-label,
+  .settings-field-grid label,
+  .settings-receipt-fields h4,
+  .settings-receipt-preview h4 {
+    font-size: 14px;
+  }
+
+  .settings-row input[type="number"] {
+    width: 96px;
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+
+  .settings-toggle {
+    width: 52px;
+    height: 28px;
+  }
+
+  .settings-toggle span::after {
+    width: 20px;
+    height: 20px;
+  }
+
+  .settings-toggle input:checked + span::after {
+    transform: translateX(24px);
+  }
+
+  .settings-field-grid {
+    gap: 8px;
+  }
+
+  .settings-field-grid label {
+    grid-template-columns: minmax(120px, 180px) 1fr;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .settings-field-grid input {
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+
+  .settings-receipt-fields-grid {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 6px 10px;
+  }
+
+  .settings-receipt-fields-grid label {
+    font-size: 13px;
+  }
+
+  .receipt-preview-paper {
+    width: 68mm;
+    padding: 10px;
+  }
+
+  .receipt-preview-paper h5,
+  .receipt-preview-paper strong {
+    font-size: 15px;
+  }
+
+  .receipt-preview-paper p,
+  .receipt-preview-paper th,
+  .receipt-preview-paper td,
+  .receipt-preview-footer {
+    font-size: 10px;
+  }
+
+  .receipt-preview-logo img {
+    max-height: 40px;
+  }
+
+  .cashier-page {
+    grid-template-columns: 170px 1fr 380px;
+  }
+
+  .cashier-left,
+  .cashier-center,
+  .cashier-right {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .cashier-cat-btn {
+    height: 36px;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .cashier-toolbar {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .cashier-search {
+    padding: 8px 10px;
+  }
+
+  .cashier-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: 6px;
+    max-height: calc(100vh - 84px);
+  }
+
+  .cashier-product-card {
+    min-height: 88px;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .cashier-product-card h3 {
+    font-size: 12px;
+  }
+
+  .cashier-product-card p,
+  .cashier-card-foot,
+  .cashier-pay p,
+  .cashier-mix-head,
+  .cashier-mix-grid label,
+  .cashier-mix-total,
+  .cashier-error {
+    font-size: 11px;
+  }
+
+  .cashier-cart-table th,
+  .cashier-cart-table td {
+    padding: 7px 6px;
+    font-size: 11px;
+  }
+
+  .cashier-qty {
+    grid-template-columns: 16px 36px 16px;
+    gap: 2px;
+  }
+
+  .cashier-qty button,
+  .cashier-del-btn {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    font-size: 10px;
+  }
+
+  .cashier-qty input {
+    width: 36px;
+    font-size: 10px;
+    padding: 2px;
+  }
+
+  .cashier-qty-unit {
+    display: none;
+  }
+
+  .cashier-pay-types {
+    gap: 6px;
+  }
+
+  .cashier-pay-types button,
+  .cashier-history-btn {
+    min-height: 32px;
+    font-size: 12px;
+    padding: 5px 6px;
+  }
+
+  .cashier-mix-box {
+    padding: 8px;
+  }
+
+  .cashier-mix-grid input {
+    padding: 6px;
+  }
+
+  .cashier-right h3,
+  .cashier-total strong {
+    font-size: 20px;
+  }
+
+  .cashier-total {
+    padding: 8px;
+  }
+
+  .cashier-sell-btn {
+    height: 40px;
+    font-size: 15px;
+  }
+
+  .qty-keypad,
+  .search-keypad,
+  .touchkbd-card {
+    padding: 8px;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1500px) {
+  .cashier-page {
+    grid-template-columns: 180px minmax(0, 1fr) 500px;
+  }
+
+  .cashier-left,
+  .cashier-center,
+  .cashier-right {
+    padding: 10px;
+  }
+
+  .cashier-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cashier-product-card {
+    min-height: 126px;
+  }
+
+  .cashier-col-product { width: 21%; }
+  .cashier-col-price { width: 37%; }
+  .cashier-col-qty { width: 20%; }
+  .cashier-col-sum { width: 14%; }
+  .cashier-col-del { width: 8%; }
+
+  .cashier-cart-table th,
+  .cashier-cart-table td {
+    font-size: 14px;
+  }
+
+  .cashier-price-input {
+    min-width: 72px;
+    width: 72px;
+    font-size: 14px;
+  }
+
+  .cashier-price-switch button {
+    min-height: 30px;
+    min-width: 68px;
+    font-size: 12px;
+  }
+
+  .cashier-qty {
+    grid-template-columns: 26px 60px 26px auto;
+    gap: 5px;
+  }
+
+  .cashier-qty button {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 14px;
+  }
+
+  .cashier-qty input {
+    width: 60px;
+    font-size: 14px;
+  }
+
+  .cashier-del-btn {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 1366px), (max-height: 900px) {
+  .auth-card {
+    width: min(400px, 88vw);
+    padding: 24px 22px 20px;
+  }
+
+  .auth-card h1 {
+    font-size: 28px;
+  }
+
+  .auth-form input {
+    min-height: 44px;
+    font-size: 18px;
+  }
+
+  .auth-form button {
+    min-height: 46px;
+    font-size: 20px;
+  }
+
+  .dashboard-page {
+    grid-template-columns: 250px 1fr;
+  }
+
+  .sidebar {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .sidebar-title {
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+
+  .menu {
+    gap: 6px;
+  }
+
+  .menu-btn {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  .workspace {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .topbar {
+    height: 42px;
+    padding: 0 10px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+  }
+
+  .search-input,
+  .salesx-search input,
+  .cashier-search,
+  .homex-search {
+    font-size: 13px;
+  }
+
+  .toolbar-actions button {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .panel,
+  .sales-tools,
+  .salesv2-filters,
+  .salesx-filter,
+  .homex-wrap,
+  .homex-wrap.v2,
+  .cashier-pay,
+  .cashier-total {
+    padding: 8px;
+  }
+
+  input,
+  select,
+  button {
+    font-size: 13px;
+  }
+
+  table {
+    min-width: 760px;
+  }
+
+  th,
+  td {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+
+  .modal-card {
+    padding: 14px;
+  }
+
+  .modal-card h3 {
+    font-size: 20px;
+  }
+
+  .modal-form,
+  .history-grid,
+  .product-modal-grid,
+  .product-piece-box {
+    gap: 8px;
+  }
+
+  .product-modal-grid-basic,
+  .product-modal-grid-pricing {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-modal-hints {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .customer-modal-head {
+    padding: 16px 20px 10px;
+  }
+
+  .customer-modal-head h3 {
+    font-size: 30px;
+  }
+
+  .customer-modal-close {
+    font-size: 30px;
+  }
+
+  .customer-modal-body {
+    padding: 14px 20px 18px;
+  }
+
+  .customer-modal-date {
+    font-size: 26px;
+  }
+
+  .customer-kpi strong {
+    font-size: 22px;
+  }
+
+  .customer-pay-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .customer-pay-totals {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .cards,
+  .salesv2-summary,
+  .sales-top-cards,
+  .salesx-cards,
+  .homex-kpis,
+  .homex-kpis.v2,
+  .homex-foot.v2 {
+    gap: 8px;
+  }
+
+  .sales-mini-card {
+    min-height: 74px;
+    padding: 9px;
+  }
+
+  .sales-mini-card p,
+  .salesv2-kpi strong,
+  .sales-stat-card strong,
+  .card p {
+    font-size: 20px;
+  }
+
+  .sales-filter-buttons,
+  .salesv2-periods,
+  .sales-tools-periods {
+    grid-template-columns: repeat(4, minmax(84px, 1fr));
+  }
+
+  .sales-date-range,
+  .salesv2-dates,
+  .sales-tools-dates {
+    gap: 8px;
+  }
+
+  .salesv2-head strong,
+  .sales-stat-card p,
+  .salesv2-kpi p,
+  .salesx-pay-badge,
+  .sales-pay-badge {
+    font-size: 11px;
+  }
+
+  .salesx-header h2 {
+    font-size: 26px;
+  }
+
+  .salesx-search input {
+    height: 42px;
+  }
+
+  .salesx-card {
+    min-height: 88px;
+    padding: 10px 12px;
+  }
+
+  .salesx-card strong {
+    font-size: 28px;
+  }
+
+  .salesx-card p {
+    font-size: 13px;
+  }
+
+  .homex-wrap.v2 .homex-topbar h2 {
+    font-size: 30px;
+  }
+
+  .homex-wrap.v2 .homex-topbar p {
+    font-size: 13px;
+  }
+
+  .homex-search {
+    height: 40px;
+    width: min(480px, 40vw);
+  }
+
+  .homex-kpis.v2 .homex-kpi {
+    min-height: 112px;
+  }
+
+  .homex-kpis.v2 .homex-kpi strong {
+    font-size: 32px;
+  }
+
+  .homex-wrap.v2 .homex-panel h3 {
+    font-size: 24px;
+  }
+
+  .homex-wrap.v2 .homex-panel .big {
+    font-size: 20px;
+  }
+
+  .homex-head h2 {
+    font-size: 24px;
+  }
+
+  .homex-kpi strong {
+    font-size: 22px;
+  }
+
+  .homex-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .homex-foot-card strong {
+    font-size: 15px;
+  }
+
+  .homex-foot-card span {
+    font-size: 16px;
+  }
+
+  .settings-shell {
+    height: auto;
+    min-height: 100%;
+    padding: 12px;
+  }
+
+  .settings-wrap {
+    display: grid;
+    max-width: 1120px;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .settings-head h2 {
+    font-size: 24px;
+  }
+
+  .settings-card h3 {
+    font-size: 20px;
+  }
+
+  .settings-row p,
+  .settings-toggle-label,
+  .settings-field-grid label {
+    font-size: 15px;
+  }
+
+  .settings-row,
+  .settings-field-grid,
+  .settings-receipt-fields,
+  .settings-receipt-preview {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .settings-field-grid input,
+  .settings-row input[type="number"] {
+    font-size: 15px;
+  }
+
+  .settings-receipt-fields-grid label {
+    font-size: 13px;
+  }
+
+  .receipt-preview-paper h5,
+  .receipt-preview-paper strong {
+    font-size: 18px;
+  }
+
+  .cashier-page {
+    grid-template-columns: 190px 1fr 430px;
+  }
+
+  .cashier-left,
+  .cashier-center,
+  .cashier-right {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .cashier-cat-btn {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .cashier-cart-table th,
+  .cashier-cart-table td,
+  .cashier-pay p,
+  .cashier-mix-head,
+  .cashier-mix-grid label,
+  .cashier-card-foot,
+  .cashier-error {
+    font-size: 11px;
+  }
+
+  .cashier-toolbar {
+    padding: 8px;
+  }
+
+  .cashier-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 8px;
+    max-height: calc(100vh - 98px);
+  }
+
+  .cashier-product-card {
+    min-height: 108px;
+    padding: 10px;
+  }
+
+  .cashier-product-card h3 {
+    font-size: 14px;
+  }
+
+  .cashier-right h3,
+  .cashier-total strong {
+    font-size: 24px;
+  }
+
+  .cashier-pay-types button,
+  .cashier-history-btn {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .cashier-sell-btn {
+    height: 48px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 1180px), (max-height: 780px) {
+  .dashboard-page {
+    grid-template-columns: 220px 1fr;
+  }
+
+  .sidebar-title {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  .menu-btn {
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .topbar {
+    height: 40px;
+  }
+
+  .topbar h1 {
+    font-size: 18px;
+  }
+
+  .toolbar-actions button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .panel-row {
+    grid-template-columns: 1fr;
+  }
+
+  .salesv2-summary,
+  .sales-top-cards {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+
+  .sales-filter-buttons,
+  .salesv2-periods,
+  .sales-tools-periods {
+    grid-template-columns: repeat(3, minmax(80px, 1fr));
+  }
+
+  .salesx-cards,
+  .homex-kpis.v2 {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+
+  .salesx-card strong,
+  .homex-kpis.v2 .homex-kpi strong {
+    font-size: 24px;
+  }
+
+  .homex-wrap.v2 .homex-topbar h2 {
+    font-size: 26px;
+  }
+
+  .homex-wrap.v2 .homex-panel h3 {
+    font-size: 20px;
+  }
+
+  .homex-wrap.v2 .homex-panel .big {
+    font-size: 18px;
+  }
+
+  .homex-grid,
+  .homex-mid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .settings-head {
+    gap: 8px;
+  }
+
+  .settings-actions {
+    gap: 8px;
+  }
+
+  .cashier-page {
+    grid-template-columns: 1fr;
+  }
+
+  .cashier-left,
+  .cashier-center {
+    border-right: none;
+    border-bottom: 1px solid rgba(127, 146, 170, 0.2);
+  }
+
+  .cashier-right {
+    min-height: auto;
+  }
+}
+
 @media (max-width: 1280px) {
   .modal-card {
     padding: 16px;
@@ -2993,7 +4260,7 @@ html[data-theme="light"] .touchkbd-card {
   }
 
   .cashier-page {
-    grid-template-columns: 200px minmax(0, 1fr) 360px;
+    grid-template-columns: 200px minmax(0, 1fr) 470px;
   }
 
   .cashier-product-grid {
@@ -3490,4 +4757,244 @@ html[data-theme="light"] .touchkbd-card {
   .touchkbd-row button.wide {
     grid-column: span 2;
   }
+}
+
+@media (min-width: 1200px) and (max-height: 1100px) {
+  .salesx-cards {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .salesx-card {
+    min-height: 56px;
+    padding: 7px 8px;
+  }
+
+  .salesx-card p {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  .salesx-card strong {
+    margin-top: 3px;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .homex-kpis.v2 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .homex-kpis.v2 .homex-kpi {
+    min-height: 60px;
+    padding: 7px 8px;
+  }
+
+  .homex-kpis.v2 .homex-kpi strong {
+    margin-top: 3px;
+    font-size: 14px;
+  }
+
+  .homex-kpis.v2 .homex-kpi .homex-kpi-title,
+  .homex-kpis.v2 .homex-kpi small,
+  .homex-kpis.v2 .homex-kpi span {
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .homex-kpi-title {
+    gap: 4px;
+  }
+
+  .homex-kpi-title .icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .homex-mid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .homex-mid > .homex-panel {
+    min-width: 0;
+  }
+
+  .homex-wrap.v2 .homex-panel h3 {
+    font-size: 18px;
+  }
+
+  .homex-wrap.v2 .homex-panel .big {
+    font-size: 16px;
+  }
+
+  .homex-row,
+  .homex-bar-label,
+  .homex-debt-totals p,
+  .homex-wrap.v2 .hint {
+    font-size: 11px;
+  }
+
+  .cashier-page {
+    grid-template-columns: 210px minmax(0, 1fr) 470px;
+    min-height: 100vh;
+  }
+
+  .cashier-left,
+  .cashier-center,
+  .cashier-right {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .cashier-left,
+  .cashier-center {
+    border-right: 1px solid rgba(127, 146, 170, 0.2);
+    border-bottom: none;
+  }
+
+  .cashier-right {
+    min-height: 100vh;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  }
+
+  .cashier-cat-btn {
+    height: 40px;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .cashier-toolbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 8px;
+  }
+
+  .cashier-search {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 10px;
+  }
+
+  .cashier-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    max-height: calc(100vh - 96px);
+    gap: 8px;
+  }
+
+  .cashier-product-card {
+    min-height: 92px;
+    padding: 8px;
+  }
+
+  .cashier-product-card h3 {
+    font-size: 12px;
+  }
+
+  .cashier-product-card p,
+  .cashier-card-foot,
+  .cashier-pay p,
+  .cashier-mix-head,
+  .cashier-mix-grid label,
+  .cashier-mix-total,
+  .cashier-error {
+    font-size: 11px;
+  }
+
+  .cashier-cart-table th,
+  .cashier-cart-table td {
+    padding: 8px 7px;
+    font-size: 11px;
+  }
+
+  .cashier-qty {
+    grid-template-columns: 16px 38px 16px;
+    gap: 3px;
+  }
+
+  .cashier-qty button,
+  .cashier-del-btn {
+    width: 16px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+
+  .cashier-qty input {
+    width: 38px;
+    padding: 2px;
+    font-size: 10px;
+  }
+
+  .cashier-qty-unit {
+    display: none;
+  }
+
+  .cashier-pay-types {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .cashier-pay-types button:nth-child(4) {
+    grid-column: 1 / 2;
+  }
+
+  .cashier-pay-types button:nth-child(5) {
+    grid-column: 2 / 3;
+  }
+
+  .cashier-pay-types button,
+  .cashier-history-btn {
+    min-height: 34px;
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+
+  .cashier-total {
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+  }
+
+  .cashier-right h3,
+  .cashier-total strong {
+    font-size: 20px;
+  }
+
+  .cashier-sell-btn {
+    height: 42px;
+    font-size: 16px;
+  }
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 {
+  gap: 8px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi {
+  min-height: 68px;
+  padding: 8px 9px;
+}
+
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi strong,
+.dashboard-page.sidebar-collapsed .salesx-card strong {
+  font-size: 16px;
+}
+
+.dashboard-page.sidebar-collapsed .salesx-cards {
+  gap: 8px;
+}
+
+.dashboard-page.sidebar-collapsed .salesx-card {
+  min-height: 64px;
+  padding: 8px 9px;
+}
+
+.dashboard-page.sidebar-collapsed .salesx-card p,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi span,
+.dashboard-page.sidebar-collapsed .homex-kpis.v2 .homex-kpi small,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel h3,
+.dashboard-page.sidebar-collapsed .homex-wrap.v2 .homex-panel .big {
+  font-size: 12px;
 }
