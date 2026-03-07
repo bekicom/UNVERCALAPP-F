@@ -42,12 +42,10 @@ export function SettingsSection({
   return (
     <section className="settings-shell">
       <form className="settings-wrap" onSubmit={onSave}>
-        <header className="settings-head">
-          <h2><Icon name="clipboard" />Sozlamalar</h2>
-          <button type="submit" disabled={saving}>{saving ? "Saqlanmoqda..." : "Kutgar"}</button>
-        </header>
+        
 
         <section className="settings-card">
+          
           <h3><Icon name="clipboard" />Umumiy sozlamalar</h3>
           <div className="settings-row">
             <p>Kam qolgan mahsulot chegarasi (dona)</p>
