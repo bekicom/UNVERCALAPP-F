@@ -1,10 +1,19 @@
 import { useMemo, useState } from "react";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 const PAGE_SIZE = 8;
 
-export function CustomersSection({ customers, summary, search, setSearch, onOpenLedger }) {
+export function CustomersSection({
+  customers,
+  summary,
+  search,
+  setSearch,
+  onOpenLedger,
+  displayCurrency = "uzs",
+  usdRate = 12171
+}) {
   const [page, setPage] = useState(1);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   const q = search.trim().toLowerCase();
   const visibleCustomers = useMemo(() => (
@@ -38,8 +47,8 @@ export function CustomersSection({ customers, summary, search, setSearch, onOpen
       <section className="salesx-cards">
         <article className="salesx-card s1"><p>Mijozlar</p><strong>{summary?.totalCustomers || 0}</strong></article>
         <article className="salesx-card s2"><p>Qarzdorlar</p><strong>{summary?.activeDebtors || 0}</strong></article>
-        <article className="salesx-card s3"><p>Jami qarz</p><strong>{formatMoney(summary?.totalDebt || 0)}</strong></article>
-        <article className="salesx-card s4"><p>Jami to'langan</p><strong>{formatMoney(summary?.totalPaid || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Jami qarz</p><strong>{formatCurrency(summary?.totalDebt || 0)}</strong></article>
+        <article className="salesx-card s4"><p>Jami to'langan</p><strong>{formatCurrency(summary?.totalPaid || 0)}</strong></article>
       </section>
 
       <section className="salesx-table-wrap">
@@ -65,9 +74,9 @@ export function CustomersSection({ customers, summary, search, setSearch, onOpen
                 <td>{c.phone}</td>
                 <td>{c.address}</td>
                 <td>
-                  <span className="salesx-pay-badge">{formatMoney(c.totalDebt || 0)}</span>
+                  <span className="salesx-pay-badge">{formatCurrency(c.totalDebt || 0)}</span>
                 </td>
-                <td>{formatMoney(c.totalPaid || 0)}</td>
+                <td>{formatCurrency(c.totalPaid || 0)}</td>
                 <td>
                   <button type="button" className="ghost" onClick={() => onOpenLedger(c)}>Ko'rish</button>
                 </td>

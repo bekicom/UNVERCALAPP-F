@@ -1671,6 +1671,13 @@ th {
   white-space: nowrap;
 }
 
+.salesx-search {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .salesx-search input {
   width: 100%;
   height: 46px;
@@ -1678,6 +1685,16 @@ th {
   background: rgba(133, 163, 207, 0.18);
   border: 1px solid rgba(145, 177, 221, 0.35);
   color: #f5f9ff;
+}
+
+.salesx-search select {
+  height: 46px;
+  min-width: 90px;
+  border-radius: 12px;
+  background: rgba(133, 163, 207, 0.18);
+  border: 1px solid rgba(145, 177, 221, 0.35);
+  color: #f5f9ff;
+  padding: 0 10px;
 }
 
 .salesx-search input::placeholder {
@@ -2085,6 +2102,23 @@ th {
   font-size: 12px;
 }
 
+.homex-currency {
+  display: inline-grid;
+  gap: 3px;
+  font-size: 12px;
+  color: #d8e7ff;
+}
+
+.homex-currency select {
+  height: 30px;
+  min-width: 90px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  background: rgba(173, 196, 230, 0.18);
+  border-color: rgba(149, 179, 223, 0.3);
+}
+
 .homex-presets {
   display: inline-flex;
   gap: 6px;
@@ -2248,10 +2282,12 @@ th {
 .cashier-page {
   width: 100%;
   min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-columns: 220px 1fr 560px;
   background: #101722;
   color: #e8eff8;
+  overflow: hidden;
 }
 
 .cashier-left {
@@ -2396,7 +2432,14 @@ th {
   gap: 12px;
   background: #151d2a;
   min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
+}
+
+.cashier-left,
+.cashier-center,
+.cashier-right {
+  min-height: 0;
 }
 
 .cashier-right h3 {
@@ -2410,6 +2453,9 @@ th {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overscroll-behavior: contain;
 }
 
 .cashier-cart-table table {
@@ -3189,6 +3235,10 @@ html[data-theme="light"] .touchkbd-card {
     height: 36px;
   }
 
+  .salesx-search select {
+    height: 36px;
+  }
+
   .salesx-cards {
     grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 6px;
@@ -3847,6 +3897,10 @@ html[data-theme="light"] .touchkbd-card {
     height: 42px;
   }
 
+  .salesx-search select {
+    height: 42px;
+  }
+
   .salesx-card {
     min-height: 88px;
     padding: 10px 12px;
@@ -4100,6 +4154,8 @@ html[data-theme="light"] .touchkbd-card {
 
   .cashier-page {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
   }
 
   .cashier-left,
@@ -4480,6 +4536,7 @@ html[data-theme="light"] .touchkbd-card {
   .cashier-right {
     grid-template-rows: auto minmax(220px, 1fr) auto auto auto;
     min-height: auto;
+    height: auto;
   }
 
   .cashier-pay-types {

@@ -1,20 +1,23 @@
 import { Icon } from "../Icon";
 import {
+  formatDisplayMoney,
   formatMoney,
   getCategoryName,
   getSupplierName,
   normalizeUnit,
 } from "../../utils/format";
 
-export function ProductsSection({ products, lowStockThreshold = 0, onRestock, onEdit, onDelete }) {
-  const formatProductPrice = (product, value) => {
-    const amount = Number(value || 0);
-    const isUsd = String(product?.priceCurrency || "uzs").toLowerCase() === "usd";
-    const rate = Number(product?.usdRateUsed || 0);
-    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(amount);
-    const usd = amount / rate;
-    return `${formatMoney(amount)} (${formatMoney(usd)}$)`;
-  };
+export function ProductsSection({
+  products,
+  lowStockThreshold = 0,
+  displayCurrency = "uzs",
+  usdRate = 12171,
+  onRestock,
+  onEdit,
+  onDelete
+}) {
+  const formatProductPrice = (_, value) => formatDisplayMoney(value, displayCurrency, usdRate);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   return (
     <section className="table-wrap products-table-wrap">
@@ -46,7 +49,7 @@ export function ProductsSection({ products, lowStockThreshold = 0, onRestock, on
               <td>{formatProductPrice(p, p.retailPrice)}</td>
               <td>{formatProductPrice(p, p.wholesalePrice)}</td>
               <td>
-                {p.paymentType || "naqd"} / {formatMoney(p.debtAmount)}
+                {p.paymentType || "naqd"} / {formatCurrency(p.debtAmount)}
               </td>
               <td>
                 {p.unit === "qop" && p.allowPieceSale

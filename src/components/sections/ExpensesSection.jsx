@@ -1,7 +1,8 @@
 import { Icon } from "../Icon";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney } from "../../utils/format";
 
-export function ExpensesSection({ expenses, onEdit, onDelete }) {
+export function ExpensesSection({ expenses, onEdit, onDelete, displayCurrency = "uzs", usdRate = 12171 }) {
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
   return (
     <section className="table-wrap">
       <table>
@@ -17,7 +18,7 @@ export function ExpensesSection({ expenses, onEdit, onDelete }) {
           {expenses.map((e) => (
             <tr key={e._id}>
               <td>{new Date(e.spentAt).toLocaleDateString()}</td>
-              <td className="stock">{formatMoney(e.amount)}</td>
+              <td className="stock">{formatCurrency(e.amount)}</td>
               <td>{e.reason}</td>
               <td className="actions-cell">
                 <button

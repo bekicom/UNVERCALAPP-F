@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 function formatDateTime(value) {
   try {
@@ -34,7 +34,9 @@ export function SalesSection({
   dateFrom,
   dateTo,
   setDateFrom,
-  setDateTo
+  setDateTo,
+  displayCurrency,
+  usdRate
 }) {
   const [page, setPage] = useState(1);
   const safeSummary = summary || {};
@@ -69,6 +71,7 @@ export function SalesSection({
     () => sales.reduce((sum, sale) => sum + Number(sale.debtAmount || 0), 0),
     [sales]
   );
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   return (
     <section className="salesx-wrap">
@@ -103,14 +106,14 @@ export function SalesSection({
 
       <section className="salesx-cards">
         <article className="salesx-card s1"><p>Savdolar</p><strong>{safeSummary.totalSales || 0}</strong></article>
-        <article className="salesx-card s2"><p>Kassaga tushgan</p><strong>{formatMoney(safeSummary.totalCollection || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Qarz to'lovi</p><strong>{formatMoney(safeSummary.totalDebtPayment || 0)}</strong></article>
-        <article className="salesx-card s3"><p>Karta</p><strong>{formatMoney(safeSummary.totalCard || 0)}</strong></article>
-        <article className="salesx-card s4"><p>Naqd</p><strong>{formatMoney(safeSummary.totalCash || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Click</p><strong>{formatMoney(safeSummary.totalClick || 0)}</strong></article>
-        <article className="salesx-card s3"><p>Qarz</p><strong>{formatMoney(totalDebt)}</strong></article>
-        <article className="salesx-card s2"><p>Savdo tushumi</p><strong>{formatMoney(safeSummary.totalRevenue || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Chiqim / Foyda</p><strong>{formatMoney(totalExpense)} / {formatMoney(safeSummary.totalProfit || 0)}</strong></article>
+        <article className="salesx-card s2"><p>Kassaga tushgan</p><strong>{formatCurrency(safeSummary.totalCollection || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Qarz to'lovi</p><strong>{formatCurrency(safeSummary.totalDebtPayment || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Karta</p><strong>{formatCurrency(safeSummary.totalCard || 0)}</strong></article>
+        <article className="salesx-card s4"><p>Naqd</p><strong>{formatCurrency(safeSummary.totalCash || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Click</p><strong>{formatCurrency(safeSummary.totalClick || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Qarz</p><strong>{formatCurrency(totalDebt)}</strong></article>
+        <article className="salesx-card s2"><p>Savdo tushumi</p><strong>{formatCurrency(safeSummary.totalRevenue || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Chiqim / Foyda</p><strong>{formatCurrency(totalExpense)} / {formatCurrency(safeSummary.totalProfit || 0)}</strong></article>
       </section>
 
       <section className="salesx-table-wrap">
@@ -161,13 +164,13 @@ export function SalesSection({
                   <td>{isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : productNamesText}</td>
                   <td>{isDebtPayment ? "-" : productQtyText}</td>
                   <td><span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span></td>
-                  <td>{formatMoney(sale.payments?.cash || 0)}</td>
-                  <td>{formatMoney(sale.payments?.card || 0)}</td>
-                  <td>{formatMoney(sale.payments?.click || 0)}</td>
-                  <td>{formatMoney(sale.debtAmount || 0)}</td>
-                  <td>{formatMoney(saleCost)}</td>
-                  <td>{formatMoney(sale.totalAmount || 0)}</td>
-                  <td className="salesx-profit">{formatMoney(saleProfit)}</td>
+                  <td>{formatCurrency(sale.payments?.cash || 0)}</td>
+                  <td>{formatCurrency(sale.payments?.card || 0)}</td>
+                  <td>{formatCurrency(sale.payments?.click || 0)}</td>
+                  <td>{formatCurrency(sale.debtAmount || 0)}</td>
+                  <td>{formatCurrency(saleCost)}</td>
+                  <td>{formatCurrency(sale.totalAmount || 0)}</td>
+                  <td className="salesx-profit">{formatCurrency(saleProfit)}</td>
                 </tr>
               );
             })}

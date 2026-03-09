@@ -62,6 +62,11 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [salesDateTo, setSalesDateTo] = useState("");
   const [homeDateFrom, setHomeDateFrom] = useState("");
   const [homeDateTo, setHomeDateTo] = useState("");
+  const [displayCurrency, setDisplayCurrency] = useState(() => {
+    if (typeof window === "undefined") return "uzs";
+    const saved = window.localStorage.getItem("displayCurrency");
+    return saved === "usd" ? "usd" : "uzs";
+  });
   const [returnsPeriod, setReturnsPeriod] = useState("today");
   const [returnsDateFrom, setReturnsDateFrom] = useState("");
   const [returnsDateTo, setReturnsDateTo] = useState("");
@@ -175,6 +180,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const settings = settingsRes?.settings || {
     lowStockThreshold: 5,
     usdRate: 12171,
+    displayCurrency: "uzs",
     keyboardEnabled: true,
     receipt: {
       title: "CHEK",
@@ -276,6 +282,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [settingsForm, setSettingsForm] = useState({
     lowStockThreshold: "5",
     usdRate: "12171",
+    displayCurrency: "uzs",
     keyboardEnabled: true,
     receipt: {
       title: "",
@@ -297,9 +304,16 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
   useEffect(() => {
     if (!settingsRes?.settings) return;
+    const savedCurrency = typeof window !== "undefined" ? window.localStorage.getItem("displayCurrency") : null;
+    const nextCurrency = settingsRes.settings.displayCurrency === "usd"
+      ? "usd"
+      : savedCurrency === "usd"
+        ? "usd"
+        : "uzs";
     setSettingsForm({
       lowStockThreshold: String(settingsRes.settings.lowStockThreshold ?? 5),
       usdRate: String(settingsRes.settings.usdRate ?? 12171),
+      displayCurrency: nextCurrency,
       keyboardEnabled: Boolean(settingsRes.settings.keyboardEnabled),
       receipt: {
         title: settingsRes.settings.receipt?.title || "",
@@ -318,7 +332,14 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         }
       }
     });
+    setDisplayCurrency(nextCurrency);
+    if (typeof window !== "undefined") window.localStorage.setItem("displayCurrency", nextCurrency);
   }, [settingsRes]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("displayCurrency", displayCurrency);
+  }, [displayCurrency]);
 
   useEffect(() => {
     const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, returnsError, customersError, settingsError]
@@ -608,9 +629,11 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     e.preventDefault();
     setSettingsErrorMsg("");
     try {
+      const nextCurrency = settingsForm.displayCurrency === "usd" ? "usd" : "uzs";
       await updateSettings({
         lowStockThreshold: Number(settingsForm.lowStockThreshold || 0),
         usdRate: Number(settingsForm.usdRate || 0),
+        displayCurrency: nextCurrency,
         keyboardEnabled: Boolean(settingsForm.keyboardEnabled),
         receipt: {
           title: settingsForm.receipt.title,
@@ -619,6 +642,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
           fields: settingsForm.receipt.fields
         }
       }).unwrap();
+      setDisplayCurrency(nextCurrency);
+      if (typeof window !== "undefined") window.localStorage.setItem("displayCurrency", nextCurrency);
       await Promise.all([refetchSettings(), refetchProducts()]);
     } catch (err) {
       setSettingsErrorMsg(err?.data?.message || err?.message || "Xatolik yuz berdi");
@@ -823,11 +848,15 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             setDateTo={setHomeDateTo}
             search={search}
             setSearch={setSearch}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
           />
         ) : activeSection === "Mahsulotlar" ? (
           <ProductsSection
             products={filteredProducts}
             lowStockThreshold={Number(settings.lowStockThreshold || 0)}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
             onRestock={openRestockModal}
             onEdit={openEditProductModal}
             onDelete={deleteProduct}
@@ -835,7 +864,15 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         ) : activeSection === "Yetkazib beruvchilar" ? (
           <SuppliersSection suppliers={filteredSuppliers} onOpenPayment={openSupplierPaymentModal} onOpenHistory={openSupplierHistory} onEdit={openEditSupplierModal} onDelete={deleteSupplier} />
         ) : activeSection === "Clientlar" ? (
-          <CustomersSection customers={customers} summary={customersSummary} search={search} setSearch={setSearch} onOpenLedger={openCustomerDebtModal} />
+          <CustomersSection
+            customers={customers}
+            summary={customersSummary}
+            search={search}
+            setSearch={setSearch}
+            onOpenLedger={openCustomerDebtModal}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
+          />
         ) : activeSection === "Sozlamalar" ? (
           <SettingsSection
             form={settingsForm}
@@ -847,6 +884,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
               setSettingsForm({
                 lowStockThreshold: String(settings.lowStockThreshold ?? 5),
                 usdRate: String(settings.usdRate ?? 12171),
+                displayCurrency: settings.displayCurrency === "usd" ? "usd" : "uzs",
                 keyboardEnabled: Boolean(settings.keyboardEnabled),
                 receipt: {
                   title: settings.receipt?.title || "",
@@ -868,7 +906,13 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             }
           />
         ) : activeSection === "Xarajatlar" ? (
-          <ExpensesSection expenses={filteredExpenses} onEdit={openEditExpenseModal} onDelete={deleteExpense} />
+          <ExpensesSection
+            expenses={filteredExpenses}
+            onEdit={openEditExpenseModal}
+            onDelete={deleteExpense}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
+          />
         ) : activeSection === "Sotuv tarixi" ? (
           <SalesSection
             sales={sales}
@@ -883,6 +927,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             dateTo={salesDateTo}
             setDateFrom={setSalesDateFrom}
             setDateTo={setSalesDateTo}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
           />
         ) : activeSection === "Qaytarib olish" ? (
           <ReturnsSection
@@ -898,6 +944,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             dateTo={returnsDateTo}
             setDateFrom={setReturnsDateFrom}
             setDateTo={setReturnsDateTo}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
           />
         ) : activeSection === "Xodimlar" ? (
           <UsersSection users={filteredUsers} onEdit={openEditUserModal} />

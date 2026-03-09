@@ -742,9 +742,20 @@ export function CashierPage({ user, onLogout }) {
                     <div className="cashier-qty">
                       <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty - getStepByUnit(row.unit)).toFixed(2)))}>-</button>
                       <input
-                        value={qtyEditor.id === row.id ? qtyEditor.value : (row.qty > 0 ? row.qty : "")}
-                        readOnly
-                        onClick={() => { if (keyboardEnabled) openQtyKeyboard(row); }}
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step={getStepByUnit(row.unit)}
+                        value={row.qty > 0 ? row.qty : ""}
+                        onChange={(e) => {
+                          const raw = String(e.target.value || "").replace(",", ".");
+                          if (raw === "") {
+                            updateCartQty(row.id, 0);
+                            return;
+                          }
+                          const parsed = Number(raw);
+                          if (Number.isFinite(parsed)) updateCartQty(row.id, parsed);
+                        }}
                         placeholder="0"
                       />
                       <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty + getStepByUnit(row.unit)).toFixed(2)))}>+</button>
