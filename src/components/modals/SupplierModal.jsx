@@ -42,6 +42,31 @@ export function SupplierModal({
               }
             />
           </label>
+          <label>
+            Astatka qarz
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.openingBalanceAmount}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, openingBalanceAmount: e.target.value }))
+              }
+              placeholder="0"
+            />
+          </label>
+          <label>
+            Valyuta
+            <select
+              value={form.openingBalanceCurrency || "uzs"}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, openingBalanceCurrency: e.target.value }))
+              }
+            >
+              <option value="uzs">SO'M</option>
+              <option value="usd">USD</option>
+            </select>
+          </label>
           {error ? <p className="error-text">{error}</p> : null}
           <div className="modal-actions">
             <button type="button" className="ghost" onClick={onClose}>

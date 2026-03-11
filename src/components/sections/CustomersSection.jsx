@@ -9,6 +9,7 @@ export function CustomersSection({
   search,
   setSearch,
   onOpenLedger,
+  onEdit,
   displayCurrency = "uzs",
   usdRate = 12171
 }) {
@@ -78,6 +79,7 @@ export function CustomersSection({
                 </td>
                 <td>{formatCurrency(c.totalPaid || 0)}</td>
                 <td>
+                  <button type="button" className="ghost" onClick={() => onEdit(c)}>Edit</button>
                   <button type="button" className="ghost" onClick={() => onOpenLedger(c)}>Ko'rish</button>
                 </td>
               </tr>

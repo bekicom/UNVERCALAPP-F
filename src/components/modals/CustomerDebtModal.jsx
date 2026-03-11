@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 function fmtDate(value) {
   try {
@@ -22,7 +22,9 @@ export function CustomerDebtModal({
   error,
   paymentError,
   onPay,
-  onClose
+  onClose,
+  displayCurrency = "uzs",
+  usdRate = 12171
 }) {
   if (!open) return null;
   const [paymentHistoryOpen, setPaymentHistoryOpen] = useState(false);
@@ -31,8 +33,17 @@ export function CustomerDebtModal({
   const totalDebt = Number(totals?.totalDebt || 0);
   const totalPaid = Number(totals?.totalPaid || 0);
   const totalDebtAllTime = Math.max(0, totalDebt + totalPaid);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
+  const toDisplayAmount = (amount) => {
+    const numeric = Number(amount || 0);
+    if (displayCurrency === "usd") {
+      const rate = Number(usdRate || 0);
+      return rate > 0 ? Math.round((numeric / rate) * 100) / 100 : 0;
+    }
+    return Math.round(numeric * 100) / 100;
+  };
   const setQuickAmount = (ratio) => {
-    const next = Math.max(0, Math.round(totalDebt * ratio));
+    const next = Math.max(0, toDisplayAmount(totalDebt * ratio));
     setForm((p) => ({ ...p, amount: String(next) }));
   };
 
@@ -53,15 +64,15 @@ export function CustomerDebtModal({
           <div className="customer-kpi-row">
             <article className="customer-kpi k1">
               <p>Jami qarz</p>
-              <strong>{formatMoney(totalDebtAllTime)} so'm</strong>
+              <strong>{formatCurrency(totalDebtAllTime)}</strong>
             </article>
             <article className="customer-kpi k2">
               <p>To'langan</p>
-              <strong>{formatMoney(totalPaid)} so'm</strong>
+              <strong>{formatCurrency(totalPaid)}</strong>
             </article>
             <article className="customer-kpi k3">
               <p>Qolgan qarz</p>
-              <strong>{formatMoney(totalDebt)} so'm</strong>
+              <strong>{formatCurrency(totalDebt)}</strong>
               <small>Pozitsiya: {sortedSales.length}</small>
             </article>
           </div>
@@ -100,8 +111,8 @@ export function CustomerDebtModal({
           </form>
 
           <div className="customer-pay-totals">
-            <p>Jami savdo: <strong>{formatMoney(totals?.totalSalesAmount || 0)} so'm</strong></p>
-            <p>Jami to'langan: <strong>{formatMoney(totalPaid)} so'm</strong></p>
+            <p>Jami savdo: <strong>{formatCurrency(totals?.totalSalesAmount || 0)}</strong></p>
+            <p>Jami to'langan: <strong>{formatCurrency(totalPaid)}</strong></p>
             <p>
               To'lovlar soni: <strong>{payments?.length || 0}</strong>
               <button
@@ -135,11 +146,11 @@ export function CustomerDebtModal({
                   return (
                     <tr key={s._id}>
                       <td>{fmtDate(s.createdAt)}</td>
-                      <td>{(s.items || []).map((it) => `${it.productName} (${it.productModel || "-"})`).join(", ")}</td>
-                      <td>{(s.items || []).map((it) => `${it.quantity} ${it.unit}`).join(", ")}</td>
-                      <td>{formatMoney(s.totalAmount || 0)} so'm</td>
-                      <td>{formatMoney(paid)} so'm</td>
-                      <td className="stock">{formatMoney(s.debtAmount || 0)} so'm</td>
+                      <td>{(s.items || []).length > 0 ? (s.items || []).map((it) => `${it.productName} (${it.productModel || "-"})`).join(", ") : (s.note || "Boshlang'ich qarzdorlik")}</td>
+                      <td>{(s.items || []).length > 0 ? (s.items || []).map((it) => `${it.quantity} ${it.unit}`).join(", ") : "-"}</td>
+                      <td>{formatCurrency(s.totalAmount || 0)}</td>
+                      <td>{formatCurrency(paid)}</td>
+                      <td className="stock">{formatCurrency(s.debtAmount || 0)}</td>
                     </tr>
                   );
                 })}
@@ -174,7 +185,7 @@ export function CustomerDebtModal({
                       ) : (payments || []).map((p) => (
                         <tr key={p._id}>
                           <td>{fmtDate(p.paidAt)}</td>
-                          <td>{formatMoney(p.amount || 0)} so'm</td>
+                          <td>{formatCurrency(p.amount || 0)}</td>
                           <td>{p.cashierUsername || "-"}</td>
                           <td>{p.note || "-"}</td>
                         </tr>

@@ -1,5 +1,5 @@
 import { Icon } from "../Icon";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 export function SupplierPaymentModal({
   open,
@@ -14,22 +14,23 @@ export function SupplierPaymentModal({
   paymentLoading,
   error,
   paymentError,
-  onClose
+  onClose,
+  displayCurrency = "uzs",
+  usdRate = 12171
 }) {
   if (!open) return null;
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   const fmtWithUsd = (uzs, usd) => {
-    const usdNum = Number(usd || 0);
-    if (!Number.isFinite(usdNum) || usdNum <= 0) return `${formatMoney(uzs)} so'm`;
-    return `${formatMoney(uzs)} so'm (${formatMoney(usdNum)}$)`;
+    if (displayCurrency === "usd") {
+      const usdNum = Number(usd || 0);
+      if (Number.isFinite(usdNum) && usdNum > 0) return `${formatMoney(usdNum)} $`;
+    }
+    return formatCurrency(uzs);
   };
 
   const fmtPurchaseAmount = (p, uzsAmount) => {
-    const isUsd = String(p?.priceCurrency || "").toLowerCase() === "usd";
-    const rate = Number(p?.usdRateUsed || 0);
-    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(uzsAmount);
-    const usd = Number(uzsAmount || 0) / rate;
-    return `${formatMoney(uzsAmount)} (${formatMoney(usd)}$)`;
+    return formatCurrency(uzsAmount);
   };
 
   return (
@@ -92,7 +93,7 @@ export function SupplierPaymentModal({
                   {payments.map((p) => (
                     <tr key={p._id}>
                       <td>{new Date(p.paidAt).toLocaleString()}</td>
-                      <td>{formatMoney(p.amount)}</td>
+                      <td>{formatCurrency(p.amount)}</td>
                       <td>{p.note || "-"}</td>
                     </tr>
                   ))}

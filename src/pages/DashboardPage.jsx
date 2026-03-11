@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   useCreateCategoryMutation,
+  useCreateCustomerMutation,
   useCreateExpenseMutation,
   useCreateProductMutation,
   useCreateSupplierMutation,
@@ -24,6 +25,7 @@ import {
   usePaySupplierDebtMutation,
   useRestockProductMutation,
   useUpdateExpenseMutation,
+  useUpdateCustomerMutation,
   useUpdateProductMutation,
   useUpdateSettingsMutation,
   useUpdateSupplierMutation,
@@ -36,6 +38,7 @@ import { ExpenseModal } from "../components/modals/ExpenseModal";
 import { ProductModal } from "../components/modals/ProductModal";
 import { RestockModal } from "../components/modals/RestockModal";
 import { CustomerDebtModal } from "../components/modals/CustomerDebtModal";
+import { CustomerModal } from "../components/modals/CustomerModal";
 import { SupplierHistoryModal } from "../components/modals/SupplierHistoryModal";
 import { SupplierModal } from "../components/modals/SupplierModal";
 import { SupplierPaymentModal } from "../components/modals/SupplierPaymentModal";
@@ -117,7 +120,9 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [fetchSupplierFinance] = useLazyGetSupplierFinanceQuery();
 
   const [createCategory, { isLoading: creatingCategory }] = useCreateCategoryMutation();
+  const [createCustomer, { isLoading: creatingCustomer }] = useCreateCustomerMutation();
   const [createSupplier, { isLoading: creatingSupplier }] = useCreateSupplierMutation();
+  const [updateCustomer, { isLoading: updatingCustomer }] = useUpdateCustomerMutation();
   const [updateSupplier, { isLoading: updatingSupplier }] = useUpdateSupplierMutation();
   const [createUser, { isLoading: creatingUser }] = useCreateUserMutation();
   const [updateUser, { isLoading: updatingUser }] = useUpdateUserMutation();
@@ -206,7 +211,10 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const [supplierModalError, setSupplierModalError] = useState("");
-  const [supplierForm, setSupplierForm] = useState({ id: "", name: "", address: "", phone: "" });
+  const [supplierForm, setSupplierForm] = useState({ id: "", name: "", address: "", phone: "", openingBalanceAmount: "", openingBalanceCurrency: "uzs" });
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
+  const [customerModalError, setCustomerModalError] = useState("");
+  const [customerForm, setCustomerForm] = useState({ id: "", fullName: "", phone: "", address: "", openingBalanceAmount: "", openingBalanceCurrency: "uzs" });
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [userModalError, setUserModalError] = useState("");
   const [userForm, setUserForm] = useState({ id: "", username: "", role: "cashier", password: "" });
@@ -395,9 +403,15 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   };
 
   const openCreateSupplierModal = () => {
-    setSupplierForm({ id: "", name: "", address: "", phone: "" });
+    setSupplierForm({ id: "", name: "", address: "", phone: "", openingBalanceAmount: "", openingBalanceCurrency: displayCurrency });
     setSupplierModalError("");
     setSupplierModalOpen(true);
+  };
+
+  const openCreateCustomerModal = () => {
+    setCustomerForm({ id: "", fullName: "", phone: "", address: "", openingBalanceAmount: "", openingBalanceCurrency: displayCurrency });
+    setCustomerModalError("");
+    setCustomerModalOpen(true);
   };
 
   const openCreateUserModal = () => {
@@ -438,25 +452,74 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   };
 
   const openEditSupplierModal = (s) => {
-    setSupplierForm({ id: s._id, name: s.name, address: s.address || "", phone: s.phone || "" });
+    setSupplierForm({
+      id: s._id,
+      name: s.name,
+      address: s.address || "",
+      phone: s.phone || "",
+      openingBalanceAmount: "",
+      openingBalanceCurrency: displayCurrency
+    });
     setSupplierModalError("");
     setSupplierModalOpen(true);
+  };
+
+  const openEditCustomerModal = (c) => {
+    setCustomerForm({
+      id: c._id,
+      fullName: c.fullName || "",
+      phone: c.phone || "",
+      address: c.address || "",
+      openingBalanceAmount: "",
+      openingBalanceCurrency: displayCurrency
+    });
+    setCustomerModalError("");
+    setCustomerModalOpen(true);
   };
 
   const saveSupplier = async (e) => {
     e.preventDefault();
     setSupplierModalError("");
     try {
-      const payload = { name: supplierForm.name, address: supplierForm.address, phone: supplierForm.phone };
+      const payload = {
+        name: supplierForm.name,
+        address: supplierForm.address,
+        phone: supplierForm.phone,
+        openingBalanceAmount: Number(supplierForm.openingBalanceAmount || 0),
+        openingBalanceCurrency: supplierForm.openingBalanceCurrency === "usd" ? "usd" : "uzs"
+      };
       if (supplierForm.id) {
         await updateSupplier({ id: supplierForm.id, ...payload }).unwrap();
       } else {
         await createSupplier(payload).unwrap();
       }
       setSupplierModalOpen(false);
-      refetchSuppliers();
+      await Promise.all([refetchSuppliers(), refetchOverview()]);
     } catch (err) {
       setSupplierModalError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
+  };
+
+  const saveCustomer = async (e) => {
+    e.preventDefault();
+    setCustomerModalError("");
+    try {
+      const payload = {
+        fullName: customerForm.fullName,
+        phone: customerForm.phone,
+        address: customerForm.address,
+        openingBalanceAmount: Number(customerForm.openingBalanceAmount || 0),
+        openingBalanceCurrency: customerForm.openingBalanceCurrency === "usd" ? "usd" : "uzs"
+      };
+      if (customerForm.id) {
+        await updateCustomer({ id: customerForm.id, ...payload }).unwrap();
+      } else {
+        await createCustomer(payload).unwrap();
+      }
+      setCustomerModalOpen(false);
+      await Promise.all([refetchCustomers(), refetchOverview()]);
+    } catch (err) {
+      setCustomerModalError(err?.data?.message || err?.message || "Xatolik yuz berdi");
     }
   };
 
@@ -565,7 +628,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     try {
       await paySupplierDebt({
         id: supplierPaymentSupplier._id,
-        amount: Number(supplierPaymentForm.amount),
+        amount: fromCurrencyInput(supplierPaymentForm.amount, displayCurrency),
         note: supplierPaymentForm.note
       }).unwrap();
       await Promise.all([loadSupplierFinance(supplierPaymentSupplier._id), refetchSuppliers(), refetchOverview()]);
@@ -611,7 +674,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     try {
       await payCustomerDebt({
         id: customerDebtCustomer._id,
-        amount: Number(customerDebtForm.amount),
+        amount: fromCurrencyInput(customerDebtForm.amount, displayCurrency),
         note: customerDebtForm.note
       }).unwrap();
       const data = await fetchCustomerLedger(customerDebtCustomer._id).unwrap();
@@ -659,6 +722,16 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
       return String(Math.round(usd * 100) / 100);
     }
     return String(Math.round(numeric * 100) / 100);
+  };
+
+  const fromCurrencyInput = (amount, currency) => {
+    const numeric = Number(amount || 0);
+    if (!Number.isFinite(numeric)) return 0;
+    if (currency === "usd") {
+      const rate = Number(settings.usdRate || 12171);
+      return rate > 0 ? Math.round(numeric * rate * 100) / 100 : 0;
+    }
+    return Math.round(numeric * 100) / 100;
   };
 
   const openCreateProductModal = () => {
@@ -806,6 +879,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         <Topbar
           activeSection={activeSection}
           openCategoryModal={openCategoryModal}
+          openCreateCustomerModal={openCreateCustomerModal}
           openCreateSupplierModal={openCreateSupplierModal}
           openCreateProductModal={openCreateProductModal}
           openCreateExpenseModal={openCreateExpenseModal}
@@ -870,6 +944,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             search={search}
             setSearch={setSearch}
             onOpenLedger={openCustomerDebtModal}
+            onEdit={openEditCustomerModal}
             displayCurrency={displayCurrency}
             usdRate={Number(settings.usdRate || 12171)}
           />
@@ -1001,6 +1076,16 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         error={supplierModalError}
       />
 
+      <CustomerModal
+        open={customerModalOpen}
+        loading={creatingCustomer || updatingCustomer}
+        form={customerForm}
+        setForm={setCustomerForm}
+        onSubmit={saveCustomer}
+        onClose={() => setCustomerModalOpen(false)}
+        error={customerModalError}
+      />
+
       <UserModal
         open={userModalOpen}
         loading={creatingUser || updatingUser}
@@ -1019,6 +1104,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         loading={supplierHistoryLoading}
         error={supplierHistoryError}
         onClose={() => setSupplierHistoryOpen(false)}
+        displayCurrency={displayCurrency}
+        usdRate={Number(settings.usdRate || 12171)}
       />
 
       <SupplierPaymentModal
@@ -1035,6 +1122,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         error={supplierPaymentModalError}
         paymentError={supplierPaymentError}
         onClose={closeSupplierPaymentModal}
+        displayCurrency={displayCurrency}
+        usdRate={Number(settings.usdRate || 12171)}
       />
 
       <RestockModal
@@ -1063,6 +1152,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         paymentError={customerDebtPaymentError}
         onPay={submitCustomerDebtPayment}
         onClose={closeCustomerDebtModal}
+        displayCurrency={displayCurrency}
+        usdRate={Number(settings.usdRate || 12171)}
       />
     </main>
   );
