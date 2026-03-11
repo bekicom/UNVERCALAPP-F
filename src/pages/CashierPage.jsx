@@ -9,7 +9,7 @@ import {
   useReturnSaleMutation
 } from "../app/api/baseApi";
 import { Icon } from "../components/Icon";
-import { formatMoney, getCategoryId } from "../utils/format";
+import { formatDisplayMoney, formatMoney, getCategoryId } from "../utils/format";
 
 function getStepByUnit(unit) {
   return String(unit || "").toLowerCase() === "kg" ? 0.1 : 1;
@@ -45,10 +45,30 @@ function getUnitPriceByType(product, priceType) {
   return Number(product?.retailPrice || 0);
 }
 
+function toDisplayAmount(amount, displayCurrency, usdRate) {
+  const numericAmount = Number(amount || 0);
+  const rate = Number(usdRate || 0);
+  if (displayCurrency === "usd" && rate > 0) {
+    return Math.round((numericAmount / rate) * 100) / 100;
+  }
+  return numericAmount;
+}
+
+function toBaseAmount(amount, displayCurrency, usdRate) {
+  const numericAmount = Number(amount || 0);
+  const rate = Number(usdRate || 0);
+  if (displayCurrency === "usd" && rate > 0) {
+    return Math.round(numericAmount * rate * 100) / 100;
+  }
+  return numericAmount;
+}
+
 function openPrintCheck(sale, settings) {
   const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
   const logoUrl = settings?.receipt?.logoUrl || "";
+  const displayCurrency = settings?.displayCurrency === "usd" ? "usd" : "uzs";
+  const usdRate = Number(settings?.usdRate || 12171);
   const receiptFields = settings?.receipt?.fields || {};
   const showDate = receiptFields.showDate !== false;
   const showCashier = receiptFields.showCashier !== false;
@@ -63,8 +83,8 @@ function openPrintCheck(sale, settings) {
     <tr>
       <td>${it.productName}</td>
       <td>${it.quantity} ${it.unit}</td>
-      ${showItemUnitPrice ? `<td>${formatMoney(it.unitPrice)}</td>` : ""}
-      ${showItemLineTotal ? `<td>${formatMoney(it.lineTotal)}</td>` : ""}
+      ${showItemUnitPrice ? `<td>${formatDisplayMoney(it.unitPrice, displayCurrency, usdRate)}</td>` : ""}
+      ${showItemLineTotal ? `<td>${formatDisplayMoney(it.lineTotal, displayCurrency, usdRate)}</td>` : ""}
     </tr>
   `).join("");
 
@@ -109,7 +129,7 @@ function openPrintCheck(sale, settings) {
           <tbody>${rows}</tbody>
         </table>` : ""}
         <div class="sep"></div>
-        ${showTotal ? `<div class="total">Jami: ${formatMoney(sale?.totalAmount || 0)} so'm</div>` : ""}
+        ${showTotal ? `<div class="total">Jami: ${formatDisplayMoney(sale?.totalAmount || 0, displayCurrency, usdRate)}</div>` : ""}
         <div class="sep"></div>
         ${showFooter ? `<div class="footer">${receiptFooter}</div>` : ""}
         </div>
@@ -183,6 +203,9 @@ export function CashierPage({ user, onLogout }) {
     mixed: { cash: "", card: "", click: "" }
   });
   const keyboardEnabled = settingsRes?.settings?.keyboardEnabled !== false;
+  const displayCurrency = settingsRes?.settings?.displayCurrency === "usd" ? "usd" : "uzs";
+  const usdRate = Number(settingsRes?.settings?.usdRate || 12171);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -197,18 +220,22 @@ export function CashierPage({ user, onLogout }) {
     () => cart.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0),
     [cart]
   );
+  const totalAmountDisplay = useMemo(
+    () => toDisplayAmount(totalAmount, displayCurrency, usdRate),
+    [totalAmount, displayCurrency, usdRate]
+  );
 
   const mixedCashAmount = useMemo(() => {
     const cash = Number(mixedPayment.cash || 0);
     if (!Number.isFinite(cash) || cash < 0) return 0;
-    return Math.min(cash, totalAmount);
-  }, [mixedPayment.cash, totalAmount]);
+    return Math.min(cash, totalAmountDisplay);
+  }, [mixedPayment.cash, totalAmountDisplay]);
 
   const mixedCardAmount = useMemo(() => {
     const card = Number(mixedPayment.card || 0);
     if (!Number.isFinite(card) || card < 0) return 0;
-    return Math.min(card, totalAmount);
-  }, [mixedPayment.card, totalAmount]);
+    return Math.min(card, totalAmountDisplay);
+  }, [mixedPayment.card, totalAmountDisplay]);
 
   const mixedSum = useMemo(
     () => Number((mixedCashAmount + mixedCardAmount).toFixed(2)),
@@ -234,7 +261,7 @@ export function CashierPage({ user, onLogout }) {
     && !!paymentType
     && !creatingSale
     && (paymentType !== "debt" || (!!debtCustomer.fullName.trim() && !!debtCustomer.phone.trim() && !!debtCustomer.address.trim()))
-    && (paymentType !== "mixed" || (mixedSum > 0 && Math.abs(mixedSum - totalAmount) < 0.001));
+    && (paymentType !== "mixed" || (mixedSum > 0 && Math.abs(mixedSum - totalAmountDisplay) < 0.001));
 
   const handlePaymentTypeSelect = (type) => {
     setPaymentType(type);
@@ -268,8 +295,8 @@ export function CashierPage({ user, onLogout }) {
   const handleMixedCashChange = (rawValue) => {
     const parsed = Number(rawValue || 0);
     const safeValue = Number.isFinite(parsed) ? parsed : 0;
-    const nextCash = Math.min(Math.max(0, safeValue), totalAmount);
-    const nextCard = Math.max(0, Number((totalAmount - nextCash).toFixed(2)));
+    const nextCash = Math.min(Math.max(0, safeValue), totalAmountDisplay);
+    const nextCard = Math.max(0, Number((totalAmountDisplay - nextCash).toFixed(2)));
     setMixedPayment({
       cash: String(nextCash),
       card: String(nextCard),
@@ -280,8 +307,8 @@ export function CashierPage({ user, onLogout }) {
   const handleMixedCardChange = (rawValue) => {
     const parsed = Number(rawValue || 0);
     const safeValue = Number.isFinite(parsed) ? parsed : 0;
-    const nextCard = Math.min(Math.max(0, safeValue), totalAmount);
-    const nextCash = Math.max(0, Number((totalAmount - nextCard).toFixed(2)));
+    const nextCard = Math.min(Math.max(0, safeValue), totalAmountDisplay);
+    const nextCash = Math.max(0, Number((totalAmountDisplay - nextCard).toFixed(2)));
     setMixedPayment({
       cash: String(nextCash),
       card: String(nextCard),
@@ -294,8 +321,8 @@ export function CashierPage({ user, onLogout }) {
 
     if (mixedPayment.lastEdited === "cash") {
       const parsedCash = Number(mixedPayment.cash || 0);
-      const safeCash = Math.min(Math.max(0, Number.isFinite(parsedCash) ? parsedCash : 0), totalAmount);
-      const nextCard = Math.max(0, Number((totalAmount - safeCash).toFixed(2)));
+      const safeCash = Math.min(Math.max(0, Number.isFinite(parsedCash) ? parsedCash : 0), totalAmountDisplay);
+      const nextCard = Math.max(0, Number((totalAmountDisplay - safeCash).toFixed(2)));
       if (String(safeCash) !== mixedPayment.cash || String(nextCard) !== mixedPayment.card) {
         setMixedPayment({
           cash: String(safeCash),
@@ -307,8 +334,8 @@ export function CashierPage({ user, onLogout }) {
     }
 
     const parsedCard = Number(mixedPayment.card || 0);
-    const safeCard = Math.min(Math.max(0, Number.isFinite(parsedCard) ? parsedCard : 0), totalAmount);
-    const nextCash = Math.max(0, Number((totalAmount - safeCard).toFixed(2)));
+    const safeCard = Math.min(Math.max(0, Number.isFinite(parsedCard) ? parsedCard : 0), totalAmountDisplay);
+    const nextCash = Math.max(0, Number((totalAmountDisplay - safeCard).toFixed(2)));
     if (String(nextCash) !== mixedPayment.cash || String(safeCard) !== mixedPayment.card) {
       setMixedPayment({
         cash: String(nextCash),
@@ -316,7 +343,7 @@ export function CashierPage({ user, onLogout }) {
         lastEdited: "card"
       });
     }
-  }, [totalAmount, paymentType, mixedPayment.cash, mixedPayment.card, mixedPayment.lastEdited]);
+  }, [totalAmountDisplay, paymentType, mixedPayment.cash, mixedPayment.card, mixedPayment.lastEdited]);
 
   const canReturn = useMemo(() => {
     if (!returnForm.saleId || !returnForm.productId) return false;
@@ -394,7 +421,7 @@ export function CashierPage({ user, onLogout }) {
       row.id === id
         ? {
             ...row,
-            price: normalized === "" ? 0 : (Number.isFinite(parsed) ? Math.max(0, parsed) : row.price),
+            price: normalized === "" ? 0 : (Number.isFinite(parsed) ? Math.max(0, toBaseAmount(parsed, displayCurrency, usdRate)) : row.price),
           }
         : row
     )));
@@ -500,8 +527,8 @@ export function CashierPage({ user, onLogout }) {
 
     const payments = paymentType === "mixed"
       ? {
-        cash: mixedCashAmount,
-        card: mixedCardAmount,
+        cash: toBaseAmount(mixedCashAmount, displayCurrency, usdRate),
+        card: toBaseAmount(mixedCardAmount, displayCurrency, usdRate),
         click: 0
       }
       : paymentType === "cash"
@@ -681,8 +708,8 @@ export function CashierPage({ user, onLogout }) {
               <h3>{product.name}</h3>
               <p>{product.model || "-"}</p>
               <div className="cashier-card-foot">
-                <span>Chakana: {formatMoney(product.retailPrice)} so'm</span>
-                <span>Optom: {formatMoney(product.wholesalePrice)} so'm</span>
+                <span>Chakana: {formatCurrency(product.retailPrice)}</span>
+                <span>Optom: {formatCurrency(product.wholesalePrice)}</span>
                 <span>Qoldiq: {formatMoney(product.quantity)} {product.unit || "dona"}</span>
               </div>
             </button>
@@ -722,7 +749,7 @@ export function CashierPage({ user, onLogout }) {
                     <div className="cashier-price-box">
                       <input
                         className="cashier-price-input"
-                        value={row.price > 0 ? String(row.price) : ""}
+                        value={row.price > 0 ? String(toDisplayAmount(row.price, displayCurrency, usdRate)) : ""}
                         onChange={(e) => updateCartPrice(row.id, e.target.value)}
                         inputMode="decimal"
                         placeholder="Narx"
@@ -762,7 +789,7 @@ export function CashierPage({ user, onLogout }) {
                       <span className="cashier-qty-unit">{row.unit}</span>
                     </div>
                   </td>
-                  <td>{formatMoney(row.price * row.qty)}</td>
+                  <td>{formatCurrency(row.price * row.qty)}</td>
                   <td>
                     <button type="button" className="cashier-del-btn" onClick={() => removeFromCart(row.id)}>x</button>
                   </td>
@@ -791,8 +818,8 @@ export function CashierPage({ user, onLogout }) {
                 <label>Naqd<input value={mixedPayment.cash} onChange={(e) => handleMixedCashChange(e.target.value)} /></label>
                 <label>Karta<input value={mixedPayment.card} onChange={(e) => handleMixedCardChange(e.target.value)} /></label>
               </div>
-              <p className={`cashier-mix-total ${Math.abs(mixedSum - totalAmount) < 0.001 ? "ok" : "bad"}`}>
-                Kiritilgan: {formatMoney(mixedSum)} / Jami: {formatMoney(totalAmount)}
+              <p className={`cashier-mix-total ${Math.abs(mixedSum - totalAmountDisplay) < 0.001 ? "ok" : "bad"}`}>
+                Kiritilgan: {formatDisplayMoney(toBaseAmount(mixedSum, displayCurrency, usdRate), displayCurrency, usdRate)} / Jami: {formatCurrency(totalAmount)}
               </p>
             </div>
           ) : null}
@@ -806,7 +833,7 @@ export function CashierPage({ user, onLogout }) {
 
         <div className="cashier-total">
           <span>Jami</span>
-          <strong>{formatMoney(totalAmount)} so'm</strong>
+          <strong>{formatCurrency(totalAmount)}</strong>
         </div>
         {saleError ? <p className="error-text cashier-error">{saleError}</p> : null}
         <button type="button" className="cashier-sell-btn" disabled={!canSell} onClick={completeSale}>
@@ -934,9 +961,9 @@ export function CashierPage({ user, onLogout }) {
                       </td>
                       <td>{paymentLabel(sale.paymentType)}</td>
                       <td>
-                        <div>{formatMoney(sale.totalAmount)}</div>
+                        <div>{formatCurrency(sale.totalAmount)}</div>
                         {Number(sale.returnedAmount || 0) > 0 ? (
-                          <small>Qaytgan: {formatMoney(sale.returnedAmount)}</small>
+                          <small>Qaytgan: {formatCurrency(sale.returnedAmount)}</small>
                         ) : null}
                       </td>
                     </tr>
@@ -968,11 +995,11 @@ export function CashierPage({ user, onLogout }) {
                 </article>
                 <article className="history-item">
                   <strong>Birlik narx</strong>
-                  <p>{formatMoney(returnForm.unitPrice)} so'm</p>
+                  <p>{formatCurrency(returnForm.unitPrice)}</p>
                 </article>
                 <article className="history-item">
                   <strong>Qaytariladigan summa</strong>
-                  <p>{formatMoney(returnTotal)} so'm</p>
+                  <p>{formatCurrency(returnTotal)}</p>
                 </article>
               </div>
 
@@ -1004,8 +1031,8 @@ export function CashierPage({ user, onLogout }) {
               </label>
 
               <p className="hint">
-                Mavjud: Naqd {formatMoney(returnForm.salePayments.cash)}, Karta {formatMoney(returnForm.salePayments.card)}, Click {formatMoney(returnForm.salePayments.click)}
-                , Qarz {formatMoney(returnForm.saleDebt)}
+                Mavjud: Naqd {formatCurrency(returnForm.salePayments.cash)}, Karta {formatCurrency(returnForm.salePayments.card)}, Click {formatCurrency(returnForm.salePayments.click)}
+                , Qarz {formatCurrency(returnForm.saleDebt)}
               </p>
 
               {returnForm.paymentType === "mixed" ? (
