@@ -137,7 +137,7 @@ router.get("/", authMiddleware, async (req, res) => {
   const period = String(req.query?.period || "").toLowerCase();
   const from = String(req.query?.from || "");
   const to = String(req.query?.to || "");
-  const query = tenantFilter(req);
+  const query = tenantFilter(req, { entryType: { $ne: "opening_balance" } });
   const createdAtRange = buildDateRangeQuery({ period, from, to });
   if (createdAtRange) {
     query.createdAt = createdAtRange;

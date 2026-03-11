@@ -143,6 +143,14 @@ export const baseApi = createApi({
       query: () => "/customers",
       providesTags: ["Customer"]
     }),
+    createCustomer: builder.mutation({
+      query: (body) => ({ url: "/customers", method: "POST", body }),
+      invalidatesTags: ["Customer", "CustomerLedger", "Overview"]
+    }),
+    updateCustomer: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/customers/${id}`, method: "PUT", body }),
+      invalidatesTags: ["Customer", "CustomerLedger", "Overview"]
+    }),
     searchCustomers: builder.query({
       query: ({ q = "" } = {}) => `/customers/lookup?q=${encodeURIComponent(q)}`,
       providesTags: ["Customer"]
@@ -188,6 +196,8 @@ export const {
   useCreateSaleMutation,
   useReturnSaleMutation,
   useGetCustomersQuery,
+  useCreateCustomerMutation,
+  useUpdateCustomerMutation,
   useLazySearchCustomersQuery,
   useLazyGetCustomerLedgerQuery,
   usePayCustomerDebtMutation

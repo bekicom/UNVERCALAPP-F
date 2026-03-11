@@ -3,6 +3,7 @@ import { Icon } from "../Icon";
 export function Topbar({
   activeSection,
   openCategoryModal,
+  openCreateCustomerModal,
   openCreateSupplierModal,
   openCreateProductModal,
   openCreateExpenseModal,
@@ -33,6 +34,8 @@ export function Topbar({
           <button type="button" onClick={openCreateUserModal}><Icon name="plus" />Xodim qo'shish</button>
         ) : activeSection === "Yetkazib beruvchilar" ? (
           <button type="button" onClick={openCreateSupplierModal}><Icon name="plus" />Yetkazib beruvchi</button>
+        ) : activeSection === "Clientlar" ? (
+          <button type="button" onClick={openCreateCustomerModal}><Icon name="plus" />Mijoz qo'shish</button>
         ) : (
           <div />
         )}

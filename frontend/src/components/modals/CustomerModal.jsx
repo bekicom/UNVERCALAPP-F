@@ -1,0 +1,71 @@
+export function CustomerModal({
+  open,
+  loading,
+  form,
+  setForm,
+  onSubmit,
+  onClose,
+  error
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <h3>{form.id ? "Mijozni tahrirlash" : "Yangi mijoz"}</h3>
+        <form className="modal-form" onSubmit={onSubmit}>
+          <label>
+            Ism-familya
+            <input
+              value={form.fullName}
+              onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
+              required
+            />
+          </label>
+          <label>
+            Telefon
+            <input
+              value={form.phone}
+              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+              required
+            />
+          </label>
+          <label>
+            Manzil
+            <input
+              value={form.address}
+              onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+              required
+            />
+          </label>
+          <label>
+            Astatka qarz
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.openingBalanceAmount}
+              onChange={(e) => setForm((p) => ({ ...p, openingBalanceAmount: e.target.value }))}
+              placeholder="0"
+            />
+          </label>
+          <label>
+            Valyuta
+            <select
+              value={form.openingBalanceCurrency}
+              onChange={(e) => setForm((p) => ({ ...p, openingBalanceCurrency: e.target.value }))}
+            >
+              <option value="uzs">SO'M</option>
+              <option value="usd">USD</option>
+            </select>
+          </label>
+          {error ? <p className="error-text">{error}</p> : null}
+          <div className="modal-actions">
+            <button type="button" className="ghost" onClick={onClose}>Bekor qilish</button>
+            <button type="submit" disabled={loading}>{loading ? "Saqlanmoqda..." : "Saqlash"}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

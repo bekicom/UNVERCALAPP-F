@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Router } from "express";
 import { authMiddleware } from "../authMiddleware.js";
+import { AppSettings } from "../models/AppSettings.js";
 import { Supplier } from "../models/Supplier.js";
 import { Product } from "../models/Product.js";
 import { Purchase } from "../models/Purchase.js";
@@ -12,6 +13,18 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
 
 function roundMoney(value) {
   return Math.round(Number(value) * 100) / 100;
+}
+
+async function getUsdRate(tenantId) {
+  const settings = await AppSettings.findOne({ tenantId }).lean();
+  const rate = Number(settings?.usdRate || 0);
+  return Number.isFinite(rate) && rate > 0 ? rate : 12171;
+}
+
+function convertToUzs(value, currency, usdRate) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) return NaN;
+  return currency === "usd" ? roundMoney(amount * usdRate) : roundMoney(amount);
 }
 
 function normalizeObjectId(value) {
@@ -249,13 +262,44 @@ router.post("/", authMiddleware, async (req, res) => {
   const name = String(req.body?.name || "").trim();
   const address = String(req.body?.address || "").trim();
   const phone = String(req.body?.phone || "").trim();
+  const openingBalanceCurrency = String(req.body?.openingBalanceCurrency || "uzs").trim().toLowerCase();
 
   if (!name) return res.status(400).json({ message: "Yetkazib beruvchi nomi kerak" });
+  if (!["uzs", "usd"].includes(openingBalanceCurrency)) {
+    return res.status(400).json({ message: "Valyuta noto'g'ri" });
+  }
 
   const exists = await Supplier.exists(tenantFilter(req, { name: { $regex: `^${escapeRegex(name)}$`, $options: "i" } }));
   if (exists) return res.status(409).json({ message: "Bu yetkazib beruvchi mavjud" });
 
+  const usdRate = await getUsdRate(req.user.tenantId);
+  const openingBalance = convertToUzs(req.body?.openingBalanceAmount || 0, openingBalanceCurrency, usdRate);
+  if (Number.isNaN(openingBalance)) {
+    return res.status(400).json({ message: "Boshlang'ich qarz summasi noto'g'ri" });
+  }
+
   const supplier = await Supplier.create(withTenant(req, { name, address, phone }));
+
+  if (openingBalance > 0) {
+    await Purchase.create(withTenant(req, {
+      entryType: "opening_balance",
+      supplierId: supplier._id,
+      productId: null,
+      productName: "Boshlang'ich astatka",
+      productModel: "-",
+      quantity: 0,
+      unit: "dona",
+      purchasePrice: openingBalance,
+      priceCurrency: openingBalanceCurrency,
+      usdRateUsed: usdRate,
+      totalCost: openingBalance,
+      paidAmount: 0,
+      debtAmount: openingBalance,
+      paymentType: "qarz",
+      pricingMode: "keep_old"
+    }));
+  }
+
   res.status(201).json({ supplier });
 });
 
@@ -263,14 +307,24 @@ router.put("/:id", authMiddleware, async (req, res) => {
   const name = String(req.body?.name || "").trim();
   const address = String(req.body?.address || "").trim();
   const phone = String(req.body?.phone || "").trim();
+  const openingBalanceCurrency = String(req.body?.openingBalanceCurrency || "uzs").trim().toLowerCase();
 
   if (!name) return res.status(400).json({ message: "Yetkazib beruvchi nomi kerak" });
+  if (!["uzs", "usd"].includes(openingBalanceCurrency)) {
+    return res.status(400).json({ message: "Valyuta noto'g'ri" });
+  }
 
   const duplicate = await Supplier.exists(tenantFilter(req, {
     _id: { $ne: req.params.id },
     name: { $regex: `^${escapeRegex(name)}$`, $options: "i" }
   }));
   if (duplicate) return res.status(409).json({ message: "Bu yetkazib beruvchi mavjud" });
+
+  const usdRate = await getUsdRate(req.user.tenantId);
+  const openingBalance = convertToUzs(req.body?.openingBalanceAmount || 0, openingBalanceCurrency, usdRate);
+  if (Number.isNaN(openingBalance)) {
+    return res.status(400).json({ message: "Boshlang'ich qarz summasi noto'g'ri" });
+  }
 
   const updated = await Supplier.findOneAndUpdate(
     tenantFilter(req, { _id: req.params.id }),
@@ -279,6 +333,27 @@ router.put("/:id", authMiddleware, async (req, res) => {
   );
 
   if (!updated) return res.status(404).json({ message: "Yetkazib beruvchi topilmadi" });
+
+  if (openingBalance > 0) {
+    await Purchase.create(withTenant(req, {
+      entryType: "opening_balance",
+      supplierId: updated._id,
+      productId: null,
+      productName: "Boshlang'ich astatka",
+      productModel: "-",
+      quantity: 0,
+      unit: "dona",
+      purchasePrice: openingBalance,
+      priceCurrency: openingBalanceCurrency,
+      usdRateUsed: usdRate,
+      totalCost: openingBalance,
+      paidAmount: 0,
+      debtAmount: openingBalance,
+      paymentType: "qarz",
+      pricingMode: "keep_old"
+    }));
+  }
+
   res.json({ supplier: updated });
 });
 

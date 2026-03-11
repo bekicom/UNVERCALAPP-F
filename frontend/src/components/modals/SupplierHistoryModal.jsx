@@ -1,21 +1,18 @@
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
-export function SupplierHistoryModal({ open, supplier, daily, purchases, loading, error, onClose }) {
+export function SupplierHistoryModal({ open, supplier, daily, purchases, loading, error, onClose, displayCurrency = "uzs", usdRate = 12171 }) {
   if (!open) return null;
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   const fmtWithUsd = (uzs, usd) => {
-    const usdNum = Number(usd || 0);
-    if (!Number.isFinite(usdNum) || usdNum <= 0) return `${formatMoney(uzs)} so'm`;
-    return `${formatMoney(uzs)} so'm (${formatMoney(usdNum)}$)`;
+    if (displayCurrency === "usd") {
+      const usdNum = Number(usd || 0);
+      if (Number.isFinite(usdNum) && usdNum > 0) return `${formatMoney(usdNum)} $`;
+    }
+    return formatCurrency(uzs);
   };
 
-  const fmtPurchaseAmount = (p, uzsAmount) => {
-    const isUsd = String(p?.priceCurrency || "").toLowerCase() === "usd";
-    const rate = Number(p?.usdRateUsed || 0);
-    if (!isUsd || !Number.isFinite(rate) || rate <= 0) return formatMoney(uzsAmount);
-    const usd = Number(uzsAmount || 0) / rate;
-    return `${formatMoney(uzsAmount)} (${formatMoney(usd)}$)`;
-  };
+  const fmtPurchaseAmount = (_, uzsAmount) => formatCurrency(uzsAmount);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
