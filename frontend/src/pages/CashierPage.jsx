@@ -188,6 +188,11 @@ export function CashierPage({ user, onLogout }) {
   const [selectedDebtCustomerId, setSelectedDebtCustomerId] = useState("");
   const [debtCustomerSearch, setDebtCustomerSearch] = useState("");
   const [debtCustomerResults, setDebtCustomerResults] = useState([]);
+  const [displayCurrency, setDisplayCurrency] = useState(() => {
+    if (typeof window === "undefined") return "uzs";
+    const saved = window.localStorage.getItem("displayCurrency");
+    return saved === "usd" ? "usd" : "uzs";
+  });
   const [returnForm, setReturnForm] = useState({
     saleId: "",
     productId: "",
@@ -203,9 +208,18 @@ export function CashierPage({ user, onLogout }) {
     mixed: { cash: "", card: "", click: "" }
   });
   const keyboardEnabled = settingsRes?.settings?.keyboardEnabled !== false;
-  const displayCurrency = settingsRes?.settings?.displayCurrency === "usd" ? "usd" : "uzs";
   const usdRate = Number(settingsRes?.settings?.usdRate || 12171);
   const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
+
+  useEffect(() => {
+    const nextCurrency = settingsRes?.settings?.displayCurrency === "usd" ? "usd" : null;
+    const savedCurrency = typeof window !== "undefined" ? window.localStorage.getItem("displayCurrency") : null;
+    const resolvedCurrency = nextCurrency || (savedCurrency === "usd" ? "usd" : "uzs");
+    setDisplayCurrency(resolvedCurrency);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("displayCurrency", resolvedCurrency);
+    }
+  }, [settingsRes]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
