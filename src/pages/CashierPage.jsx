@@ -560,6 +560,7 @@ export function CashierPage({ user, onLogout }) {
         payments,
         customer: paymentType === "debt" ? debtCustomer : undefined
       }).unwrap();
+      await refetchSales();
       if (window.confirm("Chek chiqsinmi?")) {
         openPrintCheck(result?.sale, settingsRes?.settings);
       }

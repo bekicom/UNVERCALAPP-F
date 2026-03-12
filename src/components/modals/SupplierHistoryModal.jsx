@@ -53,8 +53,8 @@ export function SupplierHistoryModal({ open, supplier, daily, purchases, loading
                   {purchases.map((p) => (
                     <tr key={p._id}>
                       <td>{new Date(p.purchasedAt).toLocaleString()}</td>
-                      <td>{p.productName} ({p.productModel})</td>
-                      <td>{p.quantity} {p.unit}</td>
+                      <td>{p.entryType === "opening_balance" ? "Boshlang'ich astatka" : `${p.productName} (${p.productModel})`}</td>
+                      <td>{p.entryType === "opening_balance" ? "-" : `${p.quantity} ${p.unit}`}</td>
                       <td>{fmtPurchaseAmount(p, p.purchasePrice)}</td>
                       <td>{fmtPurchaseAmount(p, p.totalCost)}</td>
                       <td>{fmtPurchaseAmount(p, p.paidAmount)}</td>

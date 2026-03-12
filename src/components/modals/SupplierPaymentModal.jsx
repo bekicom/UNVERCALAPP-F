@@ -115,7 +115,7 @@ export function SupplierPaymentModal({
                   {debtPurchases.map((p) => (
                     <tr key={p._id}>
                       <td>{new Date(p.purchasedAt).toLocaleString()}</td>
-                      <td>{p.productName} ({p.productModel})</td>
+                      <td>{p.entryType === "opening_balance" ? "Boshlang'ich astatka" : `${p.productName} (${p.productModel})`}</td>
                       <td className="stock">{fmtPurchaseAmount(p, p.debtAmount)}</td>
                     </tr>
                   ))}
