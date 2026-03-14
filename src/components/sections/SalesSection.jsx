@@ -22,6 +22,18 @@ function paymentLabel(value) {
 
 const PAGE_SIZE = 8;
 
+function leftQtyOf(item) {
+  const soldQty = Number(item?.quantity || 0);
+  const returnedQty = Number(item?.returnedQuantity || 0);
+  return Math.max(0, soldQty - returnedQty);
+}
+
+function isSaleFullyReturned(sale) {
+  const items = sale?.items || [];
+  if (items.length < 1) return false;
+  return items.every((item) => leftQtyOf(item) <= 0.0001);
+}
+
 export function SalesSection({
   sales,
   summary,
@@ -35,8 +47,8 @@ export function SalesSection({
   dateTo,
   setDateFrom,
   setDateTo,
-  displayCurrency,
-  usdRate
+  displayCurrency = "uzs",
+  usdRate = 12171
 }) {
   const [page, setPage] = useState(1);
   const safeSummary = summary || {};
@@ -143,14 +155,14 @@ export function SalesSection({
               <tr><td colSpan={12}>Sotuv topilmadi</td></tr>
             ) : pagedSales.map((sale) => {
               const isDebtPayment = sale.transactionType === "debt_payment" || sale.paymentType === "debt_payment";
+              const fullyReturned = !isDebtPayment && isSaleFullyReturned(sale);
               const productNamesText = (sale.items || [])
                 .map((it) => it.productName)
                 .join(", ");
               const productQtyText = (sale.items || [])
                 .map((it) => {
                   const soldQty = Number(it.quantity || 0);
-                  const returnedQty = Number(it.returnedQuantity || 0);
-                  const leftQty = Math.max(0, soldQty - returnedQty);
+                  const leftQty = leftQtyOf(it);
                   return `${formatMoney(leftQty)}/${formatMoney(soldQty)} ${it.unit}`;
                 })
                 .join(", ");
@@ -158,12 +170,36 @@ export function SalesSection({
                 .reduce((sum, it) => sum + (Number(it.lineProfit || 0) - Number(it.returnedProfit || 0)), 0);
               const saleCost = isDebtPayment ? 0 : Math.max(0, Number(sale.totalAmount || 0) - Number(saleProfit || 0));
               return (
-                <tr key={sale._id}>
+                <tr key={sale._id} className={fullyReturned ? "salesx-row-returned" : ""}>
                   <td>{formatDateTime(sale.createdAt)}</td>
                   <td>{sale.cashierUsername}</td>
-                  <td>{isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : productNamesText}</td>
+                  <td>
+                    {isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : (
+                      <div className="salesx-product-cell">
+                        <span>{productNamesText}</span>
+                        {fullyReturned ? (
+                          <span className="salesx-status-badge returned">Vozvrat qilindi</span>
+                        ) : null}
+                      </div>
+                    )}
+                  </td>
                   <td>{isDebtPayment ? "-" : productQtyText}</td>
-                  <td><span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span></td>
+                  <td>
+                    <div className="salesx-pay-stack">
+                      <span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span>
+                      {fullyReturned ? (
+                        <small className="salesx-return-note">Mahsulot omborga qaytdi</small>
+                      ) : null}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="salesx-pay-stack">
+                      <span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span>
+                      {fullyReturned ? (
+                        <small className="salesx-return-note">Mahsulot omborga qaytdi</small>
+                      ) : null}
+                    </div>
+                  </td>
                   <td>{formatCurrency(sale.payments?.cash || 0)}</td>
                   <td>{formatCurrency(sale.payments?.card || 0)}</td>
                   <td>{formatCurrency(sale.payments?.click || 0)}</td>

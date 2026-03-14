@@ -1233,6 +1233,37 @@ button.ghost {
   max-height: 88vh;
 }
 
+.products-section {
+  display: grid;
+  gap: 10px;
+}
+
+.products-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px 2px;
+}
+
+.products-pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #cfe0fb;
+  font-size: 13px;
+}
+
+.products-pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.products-pagination-actions button {
+  min-width: 40px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1820,6 +1851,10 @@ th {
   background: rgba(72, 108, 173, 0.24);
 }
 
+.salesx-row-returned {
+  background: rgba(127, 29, 29, 0.12) !important;
+}
+
 .salesx-pay-badge {
   display: inline-block;
   border-radius: 999px;
@@ -1827,6 +1862,31 @@ th {
   font-size: 12px;
   color: #dff4ff;
   background: linear-gradient(145deg, #2d80e2, #1e67c8);
+}
+
+.salesx-product-cell,
+.salesx-pay-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.salesx-status-badge.returned {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fdba74;
+  background: rgba(249, 115, 22, 0.18);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+.salesx-return-note {
+  color: #fca5a5;
+  font-size: 11px;
 }
 
 .salesx-profit {
@@ -2245,6 +2305,7 @@ th {
 .homex-foot-card {
   border-radius: 12px;
   padding: 10px 12px;
+  min-height: 84px;
   border: 1px solid rgba(109, 141, 187, 0.28);
   background: linear-gradient(150deg, rgba(24, 42, 78, 0.95), rgba(16, 32, 64, 0.95));
   display: flex;
@@ -2936,6 +2997,35 @@ html[data-theme="light"] .touchkbd-card {
 .sales-history-product-line button {
   padding: 5px 10px;
   font-size: 11px;
+}
+
+.sales-history-row-returned {
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.sales-history-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sales-history-badge.returned {
+  background: rgba(249, 115, 22, 0.22);
+  color: #fdba74;
+  border: 1px solid rgba(251, 146, 60, 0.4);
+}
+
+.sales-history-line-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #93c5fd;
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.35);
 }
 
 @media (max-width: 1440px) {

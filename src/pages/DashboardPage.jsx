@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   useCreateCategoryMutation,
+  useDeleteCategoryMutation,
   useCreateCustomerMutation,
   useCreateExpenseMutation,
   useCreateProductMutation,
@@ -26,6 +27,7 @@ import {
   useRestockProductMutation,
   useUpdateExpenseMutation,
   useUpdateCustomerMutation,
+  useUpdateCategoryMutation,
   useUpdateProductMutation,
   useUpdateSettingsMutation,
   useUpdateSupplierMutation,
@@ -44,6 +46,7 @@ import { SupplierModal } from "../components/modals/SupplierModal";
 import { SupplierPaymentModal } from "../components/modals/SupplierPaymentModal";
 import { UserModal } from "../components/modals/UserModal";
 import { CustomersSection } from "../components/sections/CustomersSection";
+import { CategoriesSection } from "../components/sections/CategoriesSection";
 import { ExpensesSection } from "../components/sections/ExpensesSection";
 import { HomeSection } from "../components/sections/HomeSection";
 import { PlaceholderSection } from "../components/sections/PlaceholderSection";
@@ -120,6 +123,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [fetchSupplierFinance] = useLazyGetSupplierFinanceQuery();
 
   const [createCategory, { isLoading: creatingCategory }] = useCreateCategoryMutation();
+  const [updateCategory, { isLoading: updatingCategory }] = useUpdateCategoryMutation();
+  const [deleteCategoryMutation] = useDeleteCategoryMutation();
   const [createCustomer, { isLoading: creatingCustomer }] = useCreateCustomerMutation();
   const [createSupplier, { isLoading: creatingSupplier }] = useCreateSupplierMutation();
   const [updateCustomer, { isLoading: updatingCustomer }] = useUpdateCustomerMutation();
@@ -207,7 +212,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [categoryModalError, setCategoryModalError] = useState("");
-  const [categoryName, setCategoryName] = useState("");
+  const [categoryForm, setCategoryForm] = useState({ id: "", name: "" });
 
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const [supplierModalError, setSupplierModalError] = useState("");
@@ -364,6 +369,22 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     });
   }, [products, search, categoryFilter]);
 
+  const filteredCategories = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const counts = new Map();
+    for (const product of products) {
+      const categoryId = getCategoryId(product);
+      counts.set(categoryId, (counts.get(categoryId) || 0) + 1);
+    }
+
+    return categories
+      .map((category) => ({
+        ...category,
+        productCount: counts.get(category._id) || 0
+      }))
+      .filter((category) => !q || category.name.toLowerCase().includes(q));
+  }, [categories, products, search]);
+
   const filteredSuppliers = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return suppliers;
@@ -386,7 +407,13 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
   const openCategoryModal = () => {
     setCategoryModalError("");
-    setCategoryName("");
+    setCategoryForm({ id: "", name: "" });
+    setCategoryModalOpen(true);
+  };
+
+  const openEditCategoryModal = (category) => {
+    setCategoryModalError("");
+    setCategoryForm({ id: category._id, name: category.name || "" });
     setCategoryModalOpen(true);
   };
 
@@ -394,11 +421,25 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     e.preventDefault();
     setCategoryModalError("");
     try {
-      await createCategory({ name: categoryName }).unwrap();
+      if (categoryForm.id) {
+        await updateCategory({ id: categoryForm.id, name: categoryForm.name }).unwrap();
+      } else {
+        await createCategory({ name: categoryForm.name }).unwrap();
+      }
       setCategoryModalOpen(false);
       refetchCategories();
     } catch (err) {
       setCategoryModalError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
+  };
+
+  const deleteCategory = async (id) => {
+    if (!window.confirm("Kategoriyani o'chirmoqchimisiz?")) return;
+    try {
+      await deleteCategoryMutation(id).unwrap();
+      await refetchCategories();
+    } catch (err) {
+      window.alert(err?.data?.message || err?.message || "Xatolik yuz berdi");
     }
   };
 
@@ -900,6 +941,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
                   <option key={c._id} value={c._id}>{c.name}</option>
                 ))}
               </select>
+            ) : activeSection === "Kategoriyalar" ? (
+              <div className="hint" style={{ alignSelf: "center" }}>Qidiruv nom bo'yicha ishlaydi</div>
             ) : (
               <div />
             )}
@@ -934,6 +977,12 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
             onRestock={openRestockModal}
             onEdit={openEditProductModal}
             onDelete={deleteProduct}
+          />
+        ) : activeSection === "Kategoriyalar" ? (
+          <CategoriesSection
+            categories={filteredCategories}
+            onEdit={openEditCategoryModal}
+            onDelete={deleteCategory}
           />
         ) : activeSection === "Yetkazib beruvchilar" ? (
           <SuppliersSection suppliers={filteredSuppliers} onOpenPayment={openSupplierPaymentModal} onOpenHistory={openSupplierHistory} onEdit={openEditSupplierModal} onDelete={deleteSupplier} />
@@ -1033,13 +1082,14 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
       <CategoryModal
         open={categoryModalOpen}
-        loading={creatingCategory}
-        name={categoryName}
-        setName={setCategoryName}
+        loading={creatingCategory || updatingCategory}
+        name={categoryForm.name}
+        setName={(value) => setCategoryForm((prev) => ({ ...prev, name: value }))}
         onSubmit={saveCategory}
         onClose={() => setCategoryModalOpen(false)}
         error={categoryModalError}
         categories={categories}
+        isEditing={Boolean(categoryForm.id)}
       />
 
       <ExpenseModal

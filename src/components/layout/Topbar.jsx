@@ -28,6 +28,8 @@ export function Topbar({
             <button type="button" onClick={openCreateSupplierModal}><Icon name="plus" />Yetkazib beruvchi</button>
             <button type="button" onClick={openCreateProductModal}><Icon name="plus" />Mahsulot qo'shish</button>
           </>
+        ) : activeSection === "Kategoriyalar" ? (
+          <button type="button" onClick={openCategoryModal}><Icon name="plus" />Kategoriya qo'shish</button>
         ) : activeSection === "Xarajatlar" ? (
           <button type="button" onClick={openCreateExpenseModal}><Icon name="plus" />Xarajat qo'shish</button>
         ) : activeSection === "Xodimlar" ? (

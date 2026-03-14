@@ -67,8 +67,8 @@ export function HomeSection({
   setDateTo,
   search,
   setSearch,
-  displayCurrency,
-  usdRate
+  displayCurrency = "uzs",
+  usdRate = 12171
 }) {
   const filteredExpenses = useMemo(
     () => expenses.filter((e) => inRange(e.spentAt || e.createdAt, dateFrom, dateTo)),

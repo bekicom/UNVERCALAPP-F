@@ -1,4 +1,4 @@
-import { PRODUCT_UNITS } from "../../constants/ui";
+import { PRODUCT_UNITS, getQuantityInputMode, getQuantityStep } from "../../constants/ui";
 import { formatMoney } from "../../utils/format";
 
 function normalizeDecimalInput(value) {
@@ -22,6 +22,8 @@ export function ProductModal({
   openCreateSupplierModal,
 }) {
   if (!open) return null;
+  const quantityStep = getQuantityStep(form.unit);
+  const quantityInputMode = getQuantityInputMode(form.unit);
   const retail = Number(form.retailPrice) || 0;
   const pieceQty = Number(form.pieceQtyPerBase) || 0;
   const suggestedPiecePrice = pieceQty > 0 ? Math.round(retail / pieceQty) : 0;
@@ -126,7 +128,8 @@ export function ProductModal({
               <input
                 type="number"
                 min="0"
-                step="1"
+                step={quantityStep}
+                inputMode={quantityInputMode}
                 value={form.quantity}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, quantity: e.target.value }))
