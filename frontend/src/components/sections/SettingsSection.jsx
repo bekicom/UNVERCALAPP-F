@@ -69,6 +69,16 @@ export function SettingsSection({
             />
           </div>
           <div className="settings-row">
+            <p>Dastur valyutasi</p>
+            <select
+              value={form.displayCurrency || "uzs"}
+              onChange={(e) => setForm((p) => ({ ...p, displayCurrency: e.target.value }))}
+            >
+              <option value="uzs">SO'M</option>
+              <option value="usd">USD</option>
+            </select>
+          </div>
+          <div className="settings-row">
             <label className="settings-toggle-label">
               <input
                 type="checkbox"

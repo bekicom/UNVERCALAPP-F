@@ -8,12 +8,16 @@ import {
   useLazySearchCustomersQuery,
   useReturnSaleMutation
 } from "../app/api/baseApi";
+import { getQuantityInputMode, getQuantityMin, getQuantityStep } from "../constants/ui";
 import { Icon } from "../components/Icon";
 import { formatDisplayMoney, formatMoney, getCategoryId } from "../utils/format";
+<<<<<<< HEAD
+=======
 
 function getStepByUnit(unit) {
   return String(unit || "").toLowerCase() === "kg" ? 0.1 : 1;
 }
+>>>>>>> e64c8a94615163a6ef7cf6ceb874e582ca477756
 
 function formatSaleTime(value) {
   try {
@@ -560,6 +564,7 @@ export function CashierPage({ user, onLogout }) {
         payments,
         customer: paymentType === "debt" ? debtCustomer : undefined
       }).unwrap();
+      await refetchSales();
       if (window.confirm("Chek chiqsinmi?")) {
         openPrintCheck(result?.sale, settingsRes?.settings);
       }
@@ -573,6 +578,12 @@ export function CashierPage({ user, onLogout }) {
     const sold = Number(item?.quantity || 0);
     const returned = Number(item?.returnedQuantity || 0);
     return Math.max(0, sold - returned);
+  };
+
+  const isSaleFullyReturned = (sale) => {
+    const items = sale?.items || [];
+    if (items.length < 1) return false;
+    return items.every((item) => leftQtyOf(item) <= 0.0001);
   };
 
   const openReturnModal = (sale, item) => {
@@ -781,12 +792,18 @@ export function CashierPage({ user, onLogout }) {
                   </td>
                   <td>
                     <div className="cashier-qty">
-                      <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty - getStepByUnit(row.unit)).toFixed(2)))}>-</button>
+                      <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty - Number(getQuantityStep(row.unit))).toFixed(2)))}>-</button>
                       <input
                         type="number"
+<<<<<<< HEAD
+                        inputMode={getQuantityInputMode(row.unit)}
+                        min="0"
+                        step={getQuantityStep(row.unit)}
+=======
                         inputMode="decimal"
                         min="0"
                         step={getStepByUnit(row.unit)}
+>>>>>>> e64c8a94615163a6ef7cf6ceb874e582ca477756
                         value={row.qty > 0 ? row.qty : ""}
                         onChange={(e) => {
                           const raw = String(e.target.value || "").replace(",", ".");
@@ -799,7 +816,7 @@ export function CashierPage({ user, onLogout }) {
                         }}
                         placeholder="0"
                       />
-                      <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty + getStepByUnit(row.unit)).toFixed(2)))}>+</button>
+                      <button type="button" onClick={() => updateCartQty(row.id, Number((row.qty + Number(getQuantityStep(row.unit))).toFixed(2)))}>+</button>
                       <span className="cashier-qty-unit">{row.unit}</span>
                     </div>
                   </td>
@@ -939,7 +956,10 @@ export function CashierPage({ user, onLogout }) {
                   ) : sales.length < 1 ? (
                     <tr><td colSpan={5}>Sotuvlar hali yo'q</td></tr>
                   ) : sales.map((sale) => (
-                    <tr key={sale._id}>
+                    <tr
+                      key={sale._id}
+                      className={isSaleFullyReturned(sale) ? "sales-history-row-returned" : ""}
+                    >
                       <td>{formatSaleTime(sale.createdAt)}</td>
                       <td>{sale.cashierUsername}</td>
                       <td>
@@ -951,6 +971,12 @@ export function CashierPage({ user, onLogout }) {
                           </div>
                         ) : (
                           <div className="sales-history-products">
+                            {isSaleFullyReturned(sale) ? (
+                              <div className="sales-history-status">
+                                <span className="badge sales-history-badge returned">Vozvrat qilindi</span>
+                                <small>Mahsulot omborga qaytdi</small>
+                              </div>
+                            ) : null}
                             {(sale.items || []).map((it) => {
                               const leftQty = leftQtyOf(it);
                               const canItemReturn = leftQty > 0.0001;
@@ -959,14 +985,17 @@ export function CashierPage({ user, onLogout }) {
                                   <span>
                                     {it.productName} ({formatMoney(leftQty)} / {formatMoney(it.quantity)} {it.unit})
                                   </span>
-                                  <button
-                                    type="button"
-                                    className="ghost"
-                                    disabled={!canItemReturn}
-                                    onClick={() => openReturnModal(sale, it)}
-                                  >
-                                    Vozvrat
-                                  </button>
+                                  {canItemReturn ? (
+                                    <button
+                                      type="button"
+                                      className="ghost"
+                                      onClick={() => openReturnModal(sale, it)}
+                                    >
+                                      Vozvrat
+                                    </button>
+                                  ) : (
+                                    <span className="sales-history-line-status">Qaytgan</span>
+                                  )}
                                 </div>
                               );
                             })}
@@ -1021,8 +1050,9 @@ export function CashierPage({ user, onLogout }) {
                 Miqdor
                 <input
                   type="number"
-                  min={String(returnForm.unit).toLowerCase() === "kg" ? "0.1" : "1"}
-                  step={String(returnForm.unit).toLowerCase() === "kg" ? "0.1" : "1"}
+                  inputMode={getQuantityInputMode(returnForm.unit)}
+                  min={getQuantityMin(returnForm.unit)}
+                  step={getQuantityStep(returnForm.unit)}
                   max={String(returnForm.leftQty)}
                   value={returnForm.qty}
                   onChange={(e) => setReturnForm((p) => ({ ...p, qty: e.target.value }))}

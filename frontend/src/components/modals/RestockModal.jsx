@@ -1,4 +1,12 @@
 import { formatMoney } from "../../utils/format";
+import { getQuantityInputMode, getQuantityStep } from "../../constants/ui";
+
+function normalizeDecimalInput(value) {
+  return String(value ?? "")
+    .replace(/,/g, ".")
+    .replace(/[^0-9.]/g, "")
+    .replace(/(\..*?)\./g, "$1");
+}
 
 function normalizeDecimalInput(value) {
   return String(value ?? "")
@@ -10,6 +18,8 @@ function normalizeDecimalInput(value) {
 export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, error, suppliers, product, usdRate = 12171 }) {
   if (!open || !product) return null;
 
+  const quantityStep = getQuantityStep(product.unit);
+  const quantityInputMode = getQuantityInputMode(product.unit);
   const requiresNewPrices = form.pricingMode !== "keep_old";
   const showPiecePrice = product.unit === "qop" && product.allowPieceSale && requiresNewPrices;
   const totalInput = (Number(form.purchasePrice) || 0) * (Number(form.quantity) || 0);
@@ -33,7 +43,15 @@ export function RestockModal({ open, loading, form, setForm, onSubmit, onClose, 
           </label>
           <label>
             Kelgan miqdor
-            <input type="number" min="0" step="1" value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} required />
+            <input
+              type="number"
+              min="0"
+              step={quantityStep}
+              inputMode={quantityInputMode}
+              value={form.quantity}
+              onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))}
+              required
+            />
           </label>
           <label>
             Valyuta

@@ -51,6 +51,7 @@ const saleReturnSchema = new mongoose.Schema(
 
 const saleSchema = new mongoose.Schema(
   {
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
     cashierId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     cashierUsername: { type: String, required: true, trim: true },
     entryType: { type: String, enum: ["sale", "opening_balance"], required: true, default: "sale" },
@@ -80,5 +81,16 @@ const saleSchema = new mongoose.Schema(
 );
 
 saleSchema.index({ tenantId: 1, createdAt: -1 });
+
+saleSchema.pre("validate", function propagateTenantId(next) {
+  if (this.tenantId && Array.isArray(this.returns) && this.returns.length > 0) {
+    for (const ret of this.returns) {
+      if (ret && !ret.tenantId) {
+        ret.tenantId = this.tenantId;
+      }
+    }
+  }
+  next();
+});
 
 export const Sale = mongoose.model("Sale", saleSchema);

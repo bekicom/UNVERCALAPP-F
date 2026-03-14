@@ -49,6 +49,14 @@ export const baseApi = createApi({
       query: (body) => ({ url: "/categories", method: "POST", body }),
       invalidatesTags: ["Category"]
     }),
+    updateCategory: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/categories/${id}`, method: "PUT", body }),
+      invalidatesTags: ["Category", "Product"]
+    }),
+    deleteCategory: builder.mutation({
+      query: (id) => ({ url: `/categories/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Category", "Product"]
+    }),
     getSuppliers: builder.query({
       query: () => "/suppliers",
       providesTags: ["Supplier"]
@@ -176,6 +184,8 @@ export const {
   useUpdateSettingsMutation,
   useGetCategoriesQuery,
   useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
   useGetSuppliersQuery,
   useCreateSupplierMutation,
   useUpdateSupplierMutation,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 function formatDateTime(value) {
   try {
@@ -33,7 +33,9 @@ export function ReturnsSection({
   dateFrom,
   dateTo,
   setDateFrom,
-  setDateTo
+  setDateTo,
+  displayCurrency = "uzs",
+  usdRate = 12171
 }) {
   const [page, setPage] = useState(1);
   const q = search.trim().toLowerCase();
@@ -58,6 +60,7 @@ export function ReturnsSection({
     { key: "30d", label: "30 kun" },
     { key: "all", label: "Hammasi" }
   ];
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   return (
     <section className="salesx-wrap">
@@ -88,10 +91,10 @@ export function ReturnsSection({
 
       <section className="salesx-cards">
         <article className="salesx-card s1"><p>Vozvratlar</p><strong>{summary.totalReturns || 0}</strong></article>
-        <article className="salesx-card s2"><p>Jami qaytgan</p><strong>{formatMoney(summary.totalReturnedAmount || 0)}</strong></article>
-        <article className="salesx-card s3"><p>Naqd qaytgan</p><strong>{formatMoney(summary.totalReturnedCash || 0)}</strong></article>
-        <article className="salesx-card s4"><p>Karta qaytgan</p><strong>{formatMoney(summary.totalReturnedCard || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Click / Miqdor</p><strong>{formatMoney(summary.totalReturnedClick || 0)} / {formatMoney(summary.totalReturnedQty || 0)}</strong></article>
+        <article className="salesx-card s2"><p>Jami qaytgan</p><strong>{formatCurrency(summary.totalReturnedAmount || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Naqd qaytgan</p><strong>{formatCurrency(summary.totalReturnedCash || 0)}</strong></article>
+        <article className="salesx-card s4"><p>Karta qaytgan</p><strong>{formatCurrency(summary.totalReturnedCard || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Click / Miqdor</p><strong>{formatCurrency(summary.totalReturnedClick || 0)} / {formatMoney(summary.totalReturnedQty || 0)}</strong></article>
       </section>
 
       <section className="salesx-table-wrap">
@@ -129,10 +132,10 @@ export function ReturnsSection({
                   <td>{names}</td>
                   <td>{qty}</td>
                   <td><span className="salesx-pay-badge">{paymentLabel(ret.paymentType)}</span></td>
-                  <td>{formatMoney(ret.payments?.cash || 0)}</td>
-                  <td>{formatMoney(ret.payments?.card || 0)}</td>
-                  <td>{formatMoney(ret.payments?.click || 0)}</td>
-                  <td>{formatMoney(ret.totalAmount || 0)}</td>
+                  <td>{formatCurrency(ret.payments?.cash || 0)}</td>
+                  <td>{formatCurrency(ret.payments?.card || 0)}</td>
+                  <td>{formatCurrency(ret.payments?.click || 0)}</td>
+                  <td>{formatCurrency(ret.totalAmount || 0)}</td>
                   <td>{ret.note || "-"}</td>
                 </tr>
               );

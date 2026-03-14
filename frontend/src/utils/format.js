@@ -11,6 +11,16 @@ export function formatMoney(value) {
   });
 }
 
+export function formatDisplayMoney(value, currency = "uzs", usdRate = 12171) {
+  const amount = Number(value || 0);
+  const rate = Number(usdRate || 0);
+  if (currency === "usd") {
+    const converted = rate > 0 ? amount / rate : 0;
+    return `${formatMoney(converted)} $`;
+  }
+  return `${formatMoney(amount)} so'm`;
+}
+
 export function normalizeUnit(value) {
   const v = String(value || "").toLowerCase();
   return PRODUCT_UNITS.includes(v) ? v : "dona";

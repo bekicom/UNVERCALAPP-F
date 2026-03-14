@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatMoney } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 
 function formatDateTime(value) {
   try {
@@ -22,6 +22,18 @@ function paymentLabel(value) {
 
 const PAGE_SIZE = 8;
 
+function leftQtyOf(item) {
+  const soldQty = Number(item?.quantity || 0);
+  const returnedQty = Number(item?.returnedQuantity || 0);
+  return Math.max(0, soldQty - returnedQty);
+}
+
+function isSaleFullyReturned(sale) {
+  const items = sale?.items || [];
+  if (items.length < 1) return false;
+  return items.every((item) => leftQtyOf(item) <= 0.0001);
+}
+
 export function SalesSection({
   sales,
   summary,
@@ -34,7 +46,14 @@ export function SalesSection({
   dateFrom,
   dateTo,
   setDateFrom,
-  setDateTo
+  setDateTo,
+<<<<<<< HEAD
+  displayCurrency = "uzs",
+  usdRate = 12171
+=======
+  displayCurrency,
+  usdRate
+>>>>>>> e64c8a94615163a6ef7cf6ceb874e582ca477756
 }) {
   const [page, setPage] = useState(1);
   const safeSummary = summary || {};
@@ -69,6 +88,7 @@ export function SalesSection({
     () => sales.reduce((sum, sale) => sum + Number(sale.debtAmount || 0), 0),
     [sales]
   );
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   return (
     <section className="salesx-wrap">
@@ -103,14 +123,14 @@ export function SalesSection({
 
       <section className="salesx-cards">
         <article className="salesx-card s1"><p>Savdolar</p><strong>{safeSummary.totalSales || 0}</strong></article>
-        <article className="salesx-card s2"><p>Kassaga tushgan</p><strong>{formatMoney(safeSummary.totalCollection || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Qarz to'lovi</p><strong>{formatMoney(safeSummary.totalDebtPayment || 0)}</strong></article>
-        <article className="salesx-card s3"><p>Karta</p><strong>{formatMoney(safeSummary.totalCard || 0)}</strong></article>
-        <article className="salesx-card s4"><p>Naqd</p><strong>{formatMoney(safeSummary.totalCash || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Click</p><strong>{formatMoney(safeSummary.totalClick || 0)}</strong></article>
-        <article className="salesx-card s3"><p>Qarz</p><strong>{formatMoney(totalDebt)}</strong></article>
-        <article className="salesx-card s2"><p>Savdo tushumi</p><strong>{formatMoney(safeSummary.totalRevenue || 0)}</strong></article>
-        <article className="salesx-card s5"><p>Chiqim / Foyda</p><strong>{formatMoney(totalExpense)} / {formatMoney(safeSummary.totalProfit || 0)}</strong></article>
+        <article className="salesx-card s2"><p>Kassaga tushgan</p><strong>{formatCurrency(safeSummary.totalCollection || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Qarz to'lovi</p><strong>{formatCurrency(safeSummary.totalDebtPayment || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Karta</p><strong>{formatCurrency(safeSummary.totalCard || 0)}</strong></article>
+        <article className="salesx-card s4"><p>Naqd</p><strong>{formatCurrency(safeSummary.totalCash || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Click</p><strong>{formatCurrency(safeSummary.totalClick || 0)}</strong></article>
+        <article className="salesx-card s3"><p>Qarz</p><strong>{formatCurrency(totalDebt)}</strong></article>
+        <article className="salesx-card s2"><p>Savdo tushumi</p><strong>{formatCurrency(safeSummary.totalRevenue || 0)}</strong></article>
+        <article className="salesx-card s5"><p>Chiqim / Foyda</p><strong>{formatCurrency(totalExpense)} / {formatCurrency(safeSummary.totalProfit || 0)}</strong></article>
       </section>
 
       <section className="salesx-table-wrap">
@@ -140,14 +160,14 @@ export function SalesSection({
               <tr><td colSpan={12}>Sotuv topilmadi</td></tr>
             ) : pagedSales.map((sale) => {
               const isDebtPayment = sale.transactionType === "debt_payment" || sale.paymentType === "debt_payment";
+              const fullyReturned = !isDebtPayment && isSaleFullyReturned(sale);
               const productNamesText = (sale.items || [])
                 .map((it) => it.productName)
                 .join(", ");
               const productQtyText = (sale.items || [])
                 .map((it) => {
                   const soldQty = Number(it.quantity || 0);
-                  const returnedQty = Number(it.returnedQuantity || 0);
-                  const leftQty = Math.max(0, soldQty - returnedQty);
+                  const leftQty = leftQtyOf(it);
                   return `${formatMoney(leftQty)}/${formatMoney(soldQty)} ${it.unit}`;
                 })
                 .join(", ");
@@ -155,19 +175,39 @@ export function SalesSection({
                 .reduce((sum, it) => sum + (Number(it.lineProfit || 0) - Number(it.returnedProfit || 0)), 0);
               const saleCost = isDebtPayment ? 0 : Math.max(0, Number(sale.totalAmount || 0) - Number(saleProfit || 0));
               return (
-                <tr key={sale._id}>
+                <tr key={sale._id} className={fullyReturned ? "salesx-row-returned" : ""}>
                   <td>{formatDateTime(sale.createdAt)}</td>
                   <td>{sale.cashierUsername}</td>
-                  <td>{isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : productNamesText}</td>
+                  <td>
+                    {isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : (
+                      <div className="salesx-product-cell">
+                        <span>{productNamesText}</span>
+                        {fullyReturned ? (
+                          <span className="salesx-status-badge returned">Vozvrat qilindi</span>
+                        ) : null}
+                      </div>
+                    )}
+                  </td>
                   <td>{isDebtPayment ? "-" : productQtyText}</td>
+<<<<<<< HEAD
+                  <td>
+                    <div className="salesx-pay-stack">
+                      <span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span>
+                      {fullyReturned ? (
+                        <small className="salesx-return-note">Mahsulot omborga qaytdi</small>
+                      ) : null}
+                    </div>
+                  </td>
+=======
                   <td><span className="salesx-pay-badge">{paymentLabel(sale.paymentType)}</span></td>
-                  <td>{formatMoney(sale.payments?.cash || 0)}</td>
-                  <td>{formatMoney(sale.payments?.card || 0)}</td>
-                  <td>{formatMoney(sale.payments?.click || 0)}</td>
-                  <td>{formatMoney(sale.debtAmount || 0)}</td>
-                  <td>{formatMoney(saleCost)}</td>
-                  <td>{formatMoney(sale.totalAmount || 0)}</td>
-                  <td className="salesx-profit">{formatMoney(saleProfit)}</td>
+>>>>>>> e64c8a94615163a6ef7cf6ceb874e582ca477756
+                  <td>{formatCurrency(sale.payments?.cash || 0)}</td>
+                  <td>{formatCurrency(sale.payments?.card || 0)}</td>
+                  <td>{formatCurrency(sale.payments?.click || 0)}</td>
+                  <td>{formatCurrency(sale.debtAmount || 0)}</td>
+                  <td>{formatCurrency(saleCost)}</td>
+                  <td>{formatCurrency(sale.totalAmount || 0)}</td>
+                  <td className="salesx-profit">{formatCurrency(saleProfit)}</td>
                 </tr>
               );
             })}

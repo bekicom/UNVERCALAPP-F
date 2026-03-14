@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { formatMoney, getCategoryName } from "../../utils/format";
+import { formatDisplayMoney, formatMoney } from "../../utils/format";
 import { Icon } from "../Icon";
 
 function formatDate(value) {
@@ -66,7 +66,14 @@ export function HomeSection({
   setDateFrom,
   setDateTo,
   search,
-  setSearch
+  setSearch,
+<<<<<<< HEAD
+  displayCurrency = "uzs",
+  usdRate = 12171
+=======
+  displayCurrency,
+  usdRate
+>>>>>>> e64c8a94615163a6ef7cf6ceb874e582ca477756
 }) {
   const filteredExpenses = useMemo(
     () => expenses.filter((e) => inRange(e.spentAt || e.createdAt, dateFrom, dateTo)),
@@ -95,6 +102,7 @@ export function HomeSection({
   );
   const cardSales = Number(salesSummary.totalCard || 0);
   const cardExpense = Math.round(expenseTotal * 0.35);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
   const lowStockProducts = useMemo(
     () => products
@@ -193,35 +201,36 @@ export function HomeSection({
       <section className="homex-kpis v2">
         <article className="homex-kpi c1">
           <span className="homex-kpi-title"><Icon name="cash" />Tushum</span>
-          <strong>{formatMoney(salesSummary.totalRevenue || 0)}</strong>
-          <small>So'm umumiy tushum</small>
+          <strong>{formatCurrency(salesSummary.totalRevenue || 0)}</strong>
+          <small>Umumiy tushum</small>
         </article>
         <article className="homex-kpi c2">
           <span className="homex-kpi-title"><Icon name="wallet" />Chiqim</span>
-          <strong>{formatMoney(expenseTotal)}</strong>
+          <strong>{formatCurrency(expenseTotal)}</strong>
           <small>Hammasi chiqim</small>
         </article>
         <article className="homex-kpi c3">
           <span className="homex-kpi-title"><Icon name="briefcase" />Foyda</span>
-          <strong>{formatMoney(salesSummary.totalProfit || 0)}</strong>
+          <strong>{formatCurrency(salesSummary.totalProfit || 0)}</strong>
           <small>Jami foyda</small>
         </article>
         <article className="homex-kpi c4">
           <span className="homex-kpi-title"><Icon name="clipboard" />Karta</span>
-          <strong>{formatMoney(cardSales)}</strong>
+          <strong>{formatCurrency(cardSales)}</strong>
           <small>Karta orqali tushum</small>
         </article>
         <article className="homex-kpi c5">
           <span className="homex-kpi-title"><Icon name="download" />Karta orqali chiqim</span>
-          <strong>{formatMoney(cardExpense)}</strong>
-          <small>So'm karta orqali chiqim</small>
+          <strong>{formatCurrency(cardExpense)}</strong>
+          <small>Karta orqali chiqim</small>
         </article>
       </section>
 
       <section className="homex-mid">
         <article className="homex-panel">
           <h3>Ombor Hisobi</h3>
-          <p className="big">{formatMoney(totalStockQty)} dona mahsulotlar qoldi</p>
+          <p className="big">{formatCurrency(stockRetailValue)}</p>
+          <p className="hint">{formatMoney(totalStockQty)} dona mahsulotlar qoldi</p>
           <div className="homex-list">
             {lowStockProducts.map((p) => (
               <div key={p._id} className="homex-row"><span>{p.name}</span><strong>{formatMoney(p.quantity)} {p.unit}</strong></div>
@@ -233,12 +242,12 @@ export function HomeSection({
         <article className="homex-panel">
           <h3>Qarzdorlik</h3>
           <div className="homex-debt-totals">
-            <p>Umumiy: <strong>{formatMoney(totalDebt)}</strong></p>
-            <p>To'lanmagan: <strong>{formatMoney(totalDebt)}</strong></p>
+            <p>Umumiy: <strong>{formatCurrency(totalDebt)}</strong></p>
+            <p>To'lanmagan: <strong>{formatCurrency(totalDebt)}</strong></p>
           </div>
           <div className="homex-list">
             {topDebtors.map((s) => (
-              <div key={s._id} className="homex-row"><span>{s.name}</span><strong>{formatMoney(s?.stats?.totalDebt || 0)}</strong></div>
+              <div key={s._id} className="homex-row"><span>{s.name}</span><strong>{formatCurrency(s?.stats?.totalDebt || 0)}</strong></div>
             ))}
             {topDebtors.length < 1 ? <p className="hint">Qarz yo'q</p> : null}
           </div>
@@ -281,7 +290,7 @@ export function HomeSection({
                   <td><span className={`homex-type ${e.type.toLowerCase()}`}>{e.type}</span></td>
                   <td>{e.products}</td>
                   <td>{e.payment || "-"}</td>
-                  <td>{formatMoney(e.amount)}</td>
+                  <td>{formatCurrency(e.amount)}</td>
                   <td>{formatTime(e.date)}</td>
                 </tr>
               ))}
@@ -294,8 +303,8 @@ export function HomeSection({
         <article className="homex-foot-card"><strong>Skladda: {formatMoney(totalStockQty)}</strong><span>dona mahsulot</span></article>
         <article className="homex-foot-card"><strong>Mahsulotlar soni</strong><span>{overview?.stats?.products || 0}</span></article>
         <article className="homex-foot-card"><strong>Vozvratlar soni</strong><span>{returnsSummary.totalReturns || 0}</span></article>
-        <article className="homex-foot-card"><strong>Ombor tannarxi</strong><span>{formatMoney(stockCostValue)}</span></article>
-        <article className="homex-foot-card"><strong>Ombor sotuv qiymati</strong><span>{formatMoney(stockRetailValue)}</span></article>
+        <article className="homex-foot-card"><strong>Ombor tannarxi</strong><span>{formatCurrency(stockCostValue)}</span></article>
+        <article className="homex-foot-card"><strong>Ombor sotuv qiymati</strong><span>{formatCurrency(stockRetailValue)}</span></article>
       </section>
     </section>
   );
