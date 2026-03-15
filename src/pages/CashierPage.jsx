@@ -60,6 +60,17 @@ function toBaseAmount(amount, displayCurrency, usdRate) {
   return numericAmount;
 }
 
+function normalizeSearchValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function customerMatches(customer, query) {
+  const q = normalizeSearchValue(query);
+  if (!q) return true;
+  return [customer?.fullName, customer?.phone, customer?.address]
+    .some((field) => normalizeSearchValue(field).includes(q));
+}
+
 function openPrintCheck(sale, settings) {
   const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
@@ -184,6 +195,7 @@ export function CashierPage({ user, onLogout }) {
   const [debtCustomerMode, setDebtCustomerMode] = useState("existing");
   const [selectedDebtCustomerId, setSelectedDebtCustomerId] = useState("");
   const [debtCustomerSearch, setDebtCustomerSearch] = useState("");
+  const [debtCustomerSeed, setDebtCustomerSeed] = useState([]);
   const [debtCustomerResults, setDebtCustomerResults] = useState([]);
   const [displayCurrency, setDisplayCurrency] = useState(() => {
     if (typeof window === "undefined") return "uzs";
@@ -286,22 +298,47 @@ export function CashierPage({ user, onLogout }) {
 
   useEffect(() => {
     if (!debtCustomerOpen || debtCustomerMode !== "existing") return;
+    const loadInitialCustomers = async () => {
+      try {
+        const data = await searchCustomers({ q: "" }).unwrap();
+        const customers = data?.customers || [];
+        setDebtCustomerSeed(customers);
+        if (!debtCustomerSearch.trim()) {
+          setDebtCustomerResults(customers);
+        }
+      } catch {
+        setDebtCustomerSeed([]);
+        if (!debtCustomerSearch.trim()) {
+          setDebtCustomerResults([]);
+        }
+      }
+    };
+    loadInitialCustomers();
+  }, [debtCustomerOpen, debtCustomerMode, searchCustomers]);
+
+  useEffect(() => {
+    if (!debtCustomerOpen || debtCustomerMode !== "existing") return;
     const q = debtCustomerSearch.trim();
     if (!q) {
-      setDebtCustomerResults([]);
+      setDebtCustomerResults(debtCustomerSeed);
       return;
     }
     const timer = setTimeout(async () => {
       try {
         const data = await searchCustomers({ q }).unwrap();
-        setDebtCustomerResults(data?.customers || []);
+        const remoteCustomers = data?.customers || [];
+        const localCustomers = debtCustomerSeed.filter((customer) => customerMatches(customer, q));
+        const mergedCustomers = [...localCustomers, ...remoteCustomers].filter((customer, index, list) => (
+          list.findIndex((entry) => String(entry?._id) === String(customer?._id)) === index
+        ));
+        setDebtCustomerResults(mergedCustomers);
       } catch {
-        setDebtCustomerResults([]);
+        setDebtCustomerResults(debtCustomerSeed.filter((customer) => customerMatches(customer, q)));
       }
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [debtCustomerOpen, debtCustomerMode, debtCustomerSearch, searchCustomers]);
+  }, [debtCustomerOpen, debtCustomerMode, debtCustomerSearch, debtCustomerSeed, searchCustomers]);
 
   const handleMixedCashChange = (rawValue) => {
     const parsed = Number(rawValue || 0);
