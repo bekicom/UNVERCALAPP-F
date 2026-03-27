@@ -96,6 +96,24 @@ export function SettingsSection({
               <span />
             </label>
           </div>
+          <div className="settings-row">
+            <label className="settings-toggle-label">
+              <input
+                type="checkbox"
+                checked={form.ustalarEnabled}
+                onChange={(e) => setForm((p) => ({ ...p, ustalarEnabled: e.target.checked }))}
+              />
+              USTALAR bo'limini yoqish
+            </label>
+            <label className="settings-toggle">
+              <input
+                type="checkbox"
+                checked={form.ustalarEnabled}
+                onChange={(e) => setForm((p) => ({ ...p, ustalarEnabled: e.target.checked }))}
+              />
+              <span />
+            </label>
+          </div>
         </section>
 
         <section className="settings-card">

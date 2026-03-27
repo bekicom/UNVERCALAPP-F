@@ -1,13 +1,18 @@
 import { sidebarGroups, MENU_ICONS } from "../../constants/ui";
 import { Icon } from "../Icon";
 
-export function Sidebar({ user, activeSection, setActiveSection, onLogout }) {
+export function Sidebar({ user, activeSection, setActiveSection, onLogout, showUstalar = false }) {
+  const groups = sidebarGroups.map((group) => {
+    if (group.title !== "TIZIM" || !showUstalar) return group;
+    return { ...group, items: [...group.items, "USTALAR"] };
+  });
+
   return (
     <aside className="sidebar">
       <div className="sidebar-top">
         <p className="badge">Admin Panel</p>
         <h2 className="sidebar-title">DOKON</h2>
-        {sidebarGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="menu-block">
             <nav className="menu">
               {group.items.map((item) => (

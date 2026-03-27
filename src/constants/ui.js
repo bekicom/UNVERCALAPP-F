@@ -39,6 +39,7 @@ export const MENU_ICONS = {
   "Sotuv": "cash",
   "Sotuv tarixi": "history",
   "Agentlar": "briefcase",
+  "USTALAR": "briefcase",
   "Xarajatlar": "wallet",
   "Buyurtmalar": "clipboard",
   "Qaytarib olish": "rotate"

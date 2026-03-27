@@ -1,0 +1,198 @@
+import { useState } from "react";
+import { formatDisplayMoney } from "../../utils/format";
+
+function fmtDate(value) {
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return "-";
+  }
+}
+
+export function MasterDebtModal({
+  open,
+  master,
+  vehicle,
+  sales,
+  payments,
+  totals,
+  form,
+  setForm,
+  loading,
+  payLoading,
+  error,
+  paymentError,
+  onPay,
+  onClose,
+  displayCurrency = "uzs",
+  usdRate = 12171
+}) {
+  const [paymentHistoryOpen, setPaymentHistoryOpen] = useState(false);
+  if (!open) return null;
+
+  const sortedSales = [...(sales || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const totalDebt = Number(totals?.totalDebt || 0);
+  const totalPaid = Number(totals?.totalPaid || 0);
+  const totalDebtAllTime = Math.max(0, totalDebt + totalPaid);
+  const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
+  const toDisplayAmount = (amount) => {
+    const numeric = Number(amount || 0);
+    if (displayCurrency === "usd") {
+      const rate = Number(usdRate || 0);
+      return rate > 0 ? Math.round((numeric / rate) * 100) / 100 : 0;
+    }
+    return Math.round(numeric * 100) / 100;
+  };
+  const setQuickAmount = (ratio) => {
+    const next = Math.max(0, toDisplayAmount(totalDebt * ratio));
+    setForm((p) => ({ ...p, amount: String(next) }));
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <section className="modal-card modal-wide customer-modal" onClick={(e) => e.stopPropagation()}>
+        <header className="customer-modal-head">
+          <div>
+            <h3>{master?.fullName || "Usta"} - {vehicle?.plateNumber || "-"}</h3>
+            <p className="modal-subtitle">{vehicle?.model || "-"} | {master?.phone || "-"}</p>
+          </div>
+          <button type="button" className="customer-modal-close" onClick={onClose}>x</button>
+        </header>
+
+        <div className="customer-modal-body">
+          <div className="customer-kpi-row">
+            <article className="customer-kpi k1">
+              <p>Jami qarz</p>
+              <strong>{formatCurrency(totalDebtAllTime)}</strong>
+            </article>
+            <article className="customer-kpi k2">
+              <p>To'langan</p>
+              <strong>{formatCurrency(totalPaid)}</strong>
+            </article>
+            <article className="customer-kpi k3">
+              <p>Qolgan qarz</p>
+              <strong>{formatCurrency(totalDebt)}</strong>
+              <small>Pozitsiya: {sortedSales.length}</small>
+            </article>
+          </div>
+
+          {loading ? <p className="hint">Yuklanmoqda...</p> : null}
+          {error ? <p className="error-text">{error}</p> : null}
+
+          <form className="customer-pay-bar" onSubmit={onPay}>
+            <label className="customer-pay-field">
+              <span>To'lov summasi</span>
+              <input
+                type="number"
+                min="1"
+                value={form.amount}
+                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+                placeholder="Summa"
+                required
+              />
+            </label>
+            <label className="customer-pay-field customer-pay-note">
+              <span>Izoh</span>
+              <input
+                value={form.note}
+                onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+                placeholder="Izoh: mashina qarzi to'landi"
+              />
+            </label>
+            <div className="customer-pay-quick">
+              <button type="button" className="ghost" onClick={() => setQuickAmount(0.25)}>25%</button>
+              <button type="button" className="ghost" onClick={() => setQuickAmount(0.5)}>50%</button>
+              <button type="button" className="ghost" onClick={() => setQuickAmount(1)}>100%</button>
+            </div>
+            <button type="submit" className="customer-pay-submit" disabled={payLoading}>
+              {payLoading ? "Saqlanmoqda..." : "Qarz to'lash"}
+            </button>
+          </form>
+
+          <div className="customer-pay-totals">
+            <p>Jami savdo: <strong>{formatCurrency(totals?.totalSalesAmount || 0)}</strong></p>
+            <p>Jami to'langan: <strong>{formatCurrency(totalPaid)}</strong></p>
+            <p>
+              To'lovlar soni: <strong>{payments?.length || 0}</strong>
+              <button type="button" className="ghost customer-history-open-btn" onClick={() => setPaymentHistoryOpen(true)}>
+                To'lov tarixi
+              </button>
+            </p>
+          </div>
+          {paymentError ? <p className="error-text">{paymentError}</p> : null}
+
+          <section className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sana</th>
+                  <th>Mahsulot</th>
+                  <th>Miqdor</th>
+                  <th>Jami</th>
+                  <th>To'langan</th>
+                  <th>Qarz</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSales.length < 1 ? (
+                  <tr><td colSpan={6}>Savdolar topilmadi</td></tr>
+                ) : sortedSales.map((sale) => {
+                  const paid = Math.max(0, Number(sale.totalAmount || 0) - Number(sale.debtAmount || 0));
+                  return (
+                    <tr key={sale._id}>
+                      <td>{fmtDate(sale.createdAt)}</td>
+                      <td>{(sale.items || []).map((item) => `${item.productName} (${item.productModel || "-"})`).join(", ") || (sale.note || "-")}</td>
+                      <td>{(sale.items || []).map((item) => `${item.quantity} ${item.unit}`).join(", ") || "-"}</td>
+                      <td>{formatCurrency(sale.totalAmount || 0)}</td>
+                      <td>{formatCurrency(paid)}</td>
+                      <td className="stock">{formatCurrency(sale.debtAmount || 0)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+
+          <div className="modal-actions">
+            <button type="button" className="ghost" onClick={onClose}>Yopish</button>
+          </div>
+
+          {paymentHistoryOpen ? (
+            <div className="modal-backdrop customer-inner-backdrop" onClick={() => setPaymentHistoryOpen(false)}>
+              <section className="modal-card modal-wide customer-history-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="customer-history-head">
+                  <h4>To'lovlar tarixi</h4>
+                  <button type="button" className="ghost" onClick={() => setPaymentHistoryOpen(false)}>Yopish</button>
+                </div>
+                <section className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Sana</th>
+                        <th>Summa</th>
+                        <th>Kim olgan</th>
+                        <th>Izoh</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(payments || []).length < 1 ? (
+                        <tr><td colSpan={4}>To'lovlar hali yo'q</td></tr>
+                      ) : (payments || []).map((payment) => (
+                        <tr key={payment._id}>
+                          <td>{fmtDate(payment.paidAt)}</td>
+                          <td>{formatCurrency(payment.amount || 0)}</td>
+                          <td>{payment.cashierUsername || "-"}</td>
+                          <td>{payment.note || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </section>
+              </section>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  );
+}

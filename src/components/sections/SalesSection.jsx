@@ -56,7 +56,7 @@ export function SalesSection({
   const q = search.trim().toLowerCase();
   const visibleSales = useMemo(() => (
     q
-      ? sales.filter((sale) => [sale.cashierUsername, sale.paymentType, sale.customerName, sale.note, ...(sale.items || []).map((it) => it.productName)]
+      ? sales.filter((sale) => [sale.cashierUsername, sale.paymentType, sale.customerName, sale.masterName, sale.vehiclePlate, sale.vehicleModel, sale.note, ...(sale.items || []).map((it) => it.productName)]
         .join(" ")
         .toLowerCase()
         .includes(q))
@@ -174,9 +174,12 @@ export function SalesSection({
                   <td>{formatDateTime(sale.createdAt)}</td>
                   <td>{sale.cashierUsername}</td>
                   <td>
-                    {isDebtPayment ? `Qarz to'lovi${sale.customerName ? ` (${sale.customerName})` : ""}` : (
+                    {isDebtPayment ? `Qarz to'lovi${sale.masterName ? ` (${sale.masterName} - ${sale.vehiclePlate || "-"})` : sale.customerName ? ` (${sale.customerName})` : ""}` : (
                       <div className="salesx-product-cell">
                         <span>{productNamesText}</span>
+                        {sale.masterName ? (
+                          <small>{sale.masterName} | {sale.vehiclePlate || "-"} {sale.vehicleModel ? `| ${sale.vehicleModel}` : ""}</small>
+                        ) : null}
                         {fullyReturned ? (
                           <span className="salesx-status-badge returned">Vozvrat qilindi</span>
                         ) : null}

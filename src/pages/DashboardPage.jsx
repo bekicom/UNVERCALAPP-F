@@ -18,10 +18,13 @@ import {
   useGetSaleReturnsQuery,
   useGetSalesQuery,
   useGetSettingsQuery,
+  useGetMastersQuery,
   useGetSuppliersQuery,
   useGetUsersQuery,
   useLazyGetCustomerLedgerQuery,
+  useLazyGetMasterLedgerQuery,
   useLazyGetSupplierFinanceQuery,
+  usePayMasterDebtMutation,
   usePayCustomerDebtMutation,
   usePaySupplierDebtMutation,
   useRestockProductMutation,
@@ -40,6 +43,7 @@ import { ExpenseModal } from "../components/modals/ExpenseModal";
 import { ProductModal } from "../components/modals/ProductModal";
 import { RestockModal } from "../components/modals/RestockModal";
 import { CustomerDebtModal } from "../components/modals/CustomerDebtModal";
+import { MasterDebtModal } from "../components/modals/MasterDebtModal";
 import { CustomerModal } from "../components/modals/CustomerModal";
 import { SupplierHistoryModal } from "../components/modals/SupplierHistoryModal";
 import { SupplierModal } from "../components/modals/SupplierModal";
@@ -55,6 +59,7 @@ import { ReturnsSection } from "../components/sections/ReturnsSection";
 import { SalesSection } from "../components/sections/SalesSection";
 import { SettingsSection } from "../components/sections/SettingsSection";
 import { SuppliersSection } from "../components/sections/SuppliersSection";
+import { UstalarSection } from "../components/sections/UstalarSection";
 import { UsersSection } from "../components/sections/UsersSection";
 import { getCategoryId, getCategoryName, getSupplierName, getSupplierId, toDateInput } from "../utils/format";
 
@@ -117,9 +122,11 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const { data: returnsRes, error: returnsError, isLoading: returnsLoading } = useGetSaleReturnsQuery(returnsQueryArgs, { skip: user?.role !== "admin" });
   const { data: settingsRes, error: settingsError, refetch: refetchSettings } = useGetSettingsQuery();
   const { data: customersRes, error: customersError, refetch: refetchCustomers } = useGetCustomersQuery(undefined, { skip: user?.role !== "admin" });
+  const { data: mastersRes, refetch: refetchMasters } = useGetMastersQuery(undefined, { skip: user?.role !== "admin" || settingsRes?.settings?.ustalarEnabled === false });
   const { data: homeSalesRes } = useGetSalesQuery(homeSalesQueryArgs, { skip: user?.role !== "admin" });
   const { data: homeReturnsRes } = useGetSaleReturnsQuery(homeReturnsQueryArgs, { skip: user?.role !== "admin" });
   const [fetchCustomerLedger] = useLazyGetCustomerLedgerQuery();
+  const [fetchMasterLedger] = useLazyGetMasterLedgerQuery();
   const [fetchSupplierFinance] = useLazyGetSupplierFinanceQuery();
 
   const [createCategory, { isLoading: creatingCategory }] = useCreateCategoryMutation();
@@ -138,6 +145,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [restockProduct, { isLoading: restocking }] = useRestockProductMutation();
   const [paySupplierDebt, { isLoading: payingSupplier }] = usePaySupplierDebtMutation();
   const [payCustomerDebt, { isLoading: payingCustomer }] = usePayCustomerDebtMutation();
+  const [payMasterDebt, { isLoading: payingMaster }] = usePayMasterDebtMutation();
   const [createExpense, { isLoading: creatingExpense }] = useCreateExpenseMutation();
   const [updateExpense, { isLoading: updatingExpense }] = useUpdateExpenseMutation();
   const [updateSettings, { isLoading: savingSettings }] = useUpdateSettingsMutation();
@@ -152,6 +160,8 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const returns = returnsRes?.returns || [];
   const customers = customersRes?.customers || [];
   const customersSummary = customersRes?.summary || { totalCustomers: 0, activeDebtors: 0, totalDebt: 0, totalPaid: 0 };
+  const masters = mastersRes?.masters || [];
+  const mastersSummary = mastersRes?.summary || { totalMasters: 0, totalVehicles: 0, activeVehicles: 0, totalDebt: 0, totalPaid: 0 };
   const homeSales = homeSalesRes?.sales || [];
   const homeReturns = homeReturnsRes?.returns || [];
   const salesSummary = salesRes?.summary || {
@@ -192,6 +202,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     usdRate: 12171,
     displayCurrency: "uzs",
     keyboardEnabled: true,
+    ustalarEnabled: false,
     receipt: {
       title: "CHEK",
       footer: "Xaridingiz uchun rahmat!",
@@ -253,6 +264,16 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
   const [customerDebtPayments, setCustomerDebtPayments] = useState([]);
   const [customerDebtTotals, setCustomerDebtTotals] = useState({ totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
   const [customerDebtForm, setCustomerDebtForm] = useState({ amount: "", note: "" });
+  const [masterDebtOpen, setMasterDebtOpen] = useState(false);
+  const [masterDebtLoading, setMasterDebtLoading] = useState(false);
+  const [masterDebtError, setMasterDebtError] = useState("");
+  const [masterDebtPaymentError, setMasterDebtPaymentError] = useState("");
+  const [masterDebtMaster, setMasterDebtMaster] = useState(null);
+  const [masterDebtVehicle, setMasterDebtVehicle] = useState(null);
+  const [masterDebtSales, setMasterDebtSales] = useState([]);
+  const [masterDebtPayments, setMasterDebtPayments] = useState([]);
+  const [masterDebtTotals, setMasterDebtTotals] = useState({ totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+  const [masterDebtForm, setMasterDebtForm] = useState({ amount: "", note: "" });
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [productModalError, setProductModalError] = useState("");
@@ -297,6 +318,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     usdRate: "12171",
     displayCurrency: "uzs",
     keyboardEnabled: true,
+    ustalarEnabled: false,
     receipt: {
       title: "",
       footer: "",
@@ -328,6 +350,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
       usdRate: String(settingsRes.settings.usdRate ?? 12171),
       displayCurrency: nextCurrency,
       keyboardEnabled: Boolean(settingsRes.settings.keyboardEnabled),
+      ustalarEnabled: Boolean(settingsRes.settings.ustalarEnabled),
       receipt: {
         title: settingsRes.settings.receipt?.title || "",
         footer: settingsRes.settings.receipt?.footer || "",
@@ -353,6 +376,13 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     if (typeof window === "undefined") return;
     window.localStorage.setItem("displayCurrency", displayCurrency);
   }, [displayCurrency]);
+
+  useEffect(() => {
+    if (settings.ustalarEnabled !== false) return;
+    if (activeSection === "USTALAR") {
+      setActiveSection("Mahsulotlar");
+    }
+  }, [activeSection, settings.ustalarEnabled]);
 
   useEffect(() => {
     const any401 = [overviewError, categoriesError, suppliersError, productsError, expensesError, usersError, salesError, returnsError, customersError, settingsError]
@@ -729,6 +759,60 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
     }
   };
 
+  const openMasterDebtModal = async (master, vehicle) => {
+    setMasterDebtMaster(master);
+    setMasterDebtVehicle(vehicle);
+    setMasterDebtOpen(true);
+    setMasterDebtError("");
+    setMasterDebtPaymentError("");
+    setMasterDebtLoading(true);
+    setMasterDebtForm({ amount: "", note: "" });
+    try {
+      const data = await fetchMasterLedger({ id: master._id, vehicleId: vehicle._id }).unwrap();
+      setMasterDebtSales(data.sales || []);
+      setMasterDebtPayments(data.payments || []);
+      setMasterDebtTotals(data.totals || { totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+      setMasterDebtMaster(data.master || master);
+      setMasterDebtVehicle(data.vehicle || vehicle);
+    } catch (err) {
+      setMasterDebtError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+      setMasterDebtSales([]);
+      setMasterDebtPayments([]);
+      setMasterDebtTotals({ totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+    } finally {
+      setMasterDebtLoading(false);
+    }
+  };
+
+  const closeMasterDebtModal = () => {
+    setMasterDebtOpen(false);
+    setMasterDebtError("");
+    setMasterDebtPaymentError("");
+    setMasterDebtForm({ amount: "", note: "" });
+  };
+
+  const submitMasterDebtPayment = async (e) => {
+    e.preventDefault();
+    if (!masterDebtMaster || !masterDebtVehicle) return;
+    setMasterDebtPaymentError("");
+    try {
+      await payMasterDebt({
+        id: masterDebtMaster._id,
+        vehicleId: masterDebtVehicle._id,
+        amount: fromCurrencyInput(masterDebtForm.amount, displayCurrency),
+        note: masterDebtForm.note
+      }).unwrap();
+      const data = await fetchMasterLedger({ id: masterDebtMaster._id, vehicleId: masterDebtVehicle._id }).unwrap();
+      setMasterDebtSales(data.sales || []);
+      setMasterDebtPayments(data.payments || []);
+      setMasterDebtTotals(data.totals || { totalSalesAmount: 0, totalDebt: 0, totalPaid: 0 });
+      setMasterDebtForm({ amount: "", note: "" });
+      await Promise.all([refetchMasters(), refetchOverview()]);
+    } catch (err) {
+      setMasterDebtPaymentError(err?.data?.message || err?.message || "Xatolik yuz berdi");
+    }
+  };
+
   const saveSettings = async (e) => {
     e.preventDefault();
     setSettingsErrorMsg("");
@@ -739,6 +823,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         usdRate: Number(settingsForm.usdRate || 0),
         displayCurrency: nextCurrency,
         keyboardEnabled: Boolean(settingsForm.keyboardEnabled),
+        ustalarEnabled: Boolean(settingsForm.ustalarEnabled),
         receipt: {
           title: settingsForm.receipt.title,
           footer: settingsForm.receipt.footer,
@@ -914,7 +999,13 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
 
   return (
     <main className={`dashboard-page ${sidebarOpen ? "" : "sidebar-collapsed"}`.trim()}>
-      <Sidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} onLogout={onLogout} />
+      <Sidebar
+        user={user}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        onLogout={onLogout}
+        showUstalar={settings.ustalarEnabled !== false}
+      />
 
       <section className="workspace">
         <Topbar
@@ -931,7 +1022,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         />
 
-        {activeSection !== "Sotuv tarixi" && activeSection !== "Qaytarib olish" && activeSection !== "Bosh sahifa" && activeSection !== "Clientlar" && activeSection !== "Sozlamalar" ? (
+        {activeSection !== "Sotuv tarixi" && activeSection !== "Qaytarib olish" && activeSection !== "Bosh sahifa" && activeSection !== "Clientlar" && activeSection !== "Sozlamalar" && activeSection !== "USTALAR" ? (
           <section className="panel panel-row">
             <input className="search-input" placeholder="Qidirish..." value={search} onChange={(e) => setSearch(e.target.value)} />
             {activeSection === "Mahsulotlar" ? (
@@ -1010,6 +1101,7 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
                 usdRate: String(settings.usdRate ?? 12171),
                 displayCurrency: settings.displayCurrency === "usd" ? "usd" : "uzs",
                 keyboardEnabled: Boolean(settings.keyboardEnabled),
+                ustalarEnabled: Boolean(settings.ustalarEnabled),
                 receipt: {
                   title: settings.receipt?.title || "",
                   footer: settings.receipt?.footer || "",
@@ -1028,6 +1120,16 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
                 }
               })
             }
+          />
+        ) : activeSection === "USTALAR" ? (
+          <UstalarSection
+            masters={masters}
+            summary={mastersSummary}
+            search={search}
+            setSearch={setSearch}
+            onOpenLedger={openMasterDebtModal}
+            displayCurrency={displayCurrency}
+            usdRate={Number(settings.usdRate || 12171)}
           />
         ) : activeSection === "Xarajatlar" ? (
           <ExpensesSection
@@ -1202,6 +1304,24 @@ export function DashboardPage({ user, onLogout, theme = "dark", setTheme = () =>
         paymentError={customerDebtPaymentError}
         onPay={submitCustomerDebtPayment}
         onClose={closeCustomerDebtModal}
+        displayCurrency={displayCurrency}
+        usdRate={Number(settings.usdRate || 12171)}
+      />
+      <MasterDebtModal
+        open={masterDebtOpen}
+        master={masterDebtMaster}
+        vehicle={masterDebtVehicle}
+        sales={masterDebtSales}
+        payments={masterDebtPayments}
+        totals={masterDebtTotals}
+        form={masterDebtForm}
+        setForm={setMasterDebtForm}
+        loading={masterDebtLoading}
+        payLoading={payingMaster}
+        error={masterDebtError}
+        paymentError={masterDebtPaymentError}
+        onPay={submitMasterDebtPayment}
+        onClose={closeMasterDebtModal}
         displayCurrency={displayCurrency}
         usdRate={Number(settings.usdRate || 12171)}
       />

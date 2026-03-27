@@ -12,7 +12,7 @@ export const baseApi = createApi({
       return headers;
     }
   }),
-  tagTypes: ["Overview", "User", "Category", "Supplier", "Product", "Expense", "SupplierFinance", "Sale", "Customer", "CustomerLedger", "Settings"],
+  tagTypes: ["Overview", "User", "Category", "Supplier", "Product", "Expense", "SupplierFinance", "Sale", "Customer", "CustomerLedger", "Master", "MasterLedger", "Settings"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({ url: "/auth/login", method: "POST", body })
@@ -170,6 +170,22 @@ export const baseApi = createApi({
     payCustomerDebt: builder.mutation({
       query: ({ id, ...body }) => ({ url: `/customers/${id}/payments`, method: "POST", body }),
       invalidatesTags: (_, __, arg) => [{ type: "CustomerLedger", id: arg.id }, "Customer", "Sale", "Overview"]
+    }),
+    getMasters: builder.query({
+      query: ({ q = "" } = {}) => `/masters${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+      providesTags: ["Master"]
+    }),
+    searchMasters: builder.query({
+      query: ({ q = "" } = {}) => `/masters/lookup?q=${encodeURIComponent(q)}`,
+      providesTags: ["Master"]
+    }),
+    getMasterLedger: builder.query({
+      query: ({ id, vehicleId }) => `/masters/${id}/ledger?vehicleId=${encodeURIComponent(vehicleId)}`,
+      providesTags: (_, __, arg) => [{ type: "MasterLedger", id: `${arg.id}:${arg.vehicleId}` }]
+    }),
+    payMasterDebt: builder.mutation({
+      query: ({ id, vehicleId, ...body }) => ({ url: `/masters/${id}/vehicles/${vehicleId}/payments`, method: "POST", body }),
+      invalidatesTags: (_, __, arg) => [{ type: "MasterLedger", id: `${arg.id}:${arg.vehicleId}` }, "Master", "Sale", "Overview"]
     })
   })
 });
@@ -210,5 +226,9 @@ export const {
   useUpdateCustomerMutation,
   useLazySearchCustomersQuery,
   useLazyGetCustomerLedgerQuery,
-  usePayCustomerDebtMutation
+  usePayCustomerDebtMutation,
+  useGetMastersQuery,
+  useLazySearchMastersQuery,
+  useLazyGetMasterLedgerQuery,
+  usePayMasterDebtMutation
 } = baseApi;

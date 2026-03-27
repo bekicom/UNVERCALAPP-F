@@ -5,6 +5,7 @@ import {
   useGetProductsQuery,
   useGetSalesQuery,
   useGetSettingsQuery,
+  useLazySearchMastersQuery,
   useLazySearchCustomersQuery,
   useReturnSaleMutation
 } from "../app/api/baseApi";
@@ -71,6 +72,16 @@ function customerMatches(customer, query) {
     .some((field) => normalizeSearchValue(field).includes(q));
 }
 
+function masterMatches(master, query) {
+  const q = normalizeSearchValue(query);
+  if (!q) return true;
+  return [
+    master?.fullName,
+    master?.phone,
+    ...(master?.vehicles || []).flatMap((vehicle) => [vehicle?.plateNumber, vehicle?.model])
+  ].some((field) => normalizeSearchValue(field).includes(q));
+}
+
 function openPrintCheck(sale, settings) {
   const receiptTitle = settings?.receipt?.title || "CHEK";
   const receiptFooter = settings?.receipt?.footer || "Xaridingiz uchun rahmat!";
@@ -124,6 +135,8 @@ function openPrintCheck(sale, settings) {
         ${showCashier ? `<div>Kassir: ${sale?.cashierUsername || "-"}</div>` : ""}
         ${showPaymentType ? `<div>To'lov: ${paymentLabel(sale?.paymentType)}</div>` : ""}
         ${showCustomer && sale?.customerName ? `<div>Mijoz: ${sale.customerName} (${sale.customerPhone || "-"})</div>` : ""}
+        ${sale?.masterName ? `<div>Usta: ${sale.masterName}</div>` : ""}
+        ${sale?.vehiclePlate ? `<div>Mashina: ${sale.vehiclePlate}${sale?.vehicleModel ? ` (${sale.vehicleModel})` : ""}</div>` : ""}
         <div class="sep"></div>
         ${showItemsTable ? `<table>
           <thead>
@@ -169,6 +182,7 @@ export function CashierPage({ user, onLogout }) {
   const [createSale, { isLoading: creatingSale }] = useCreateSaleMutation();
   const [returnSale, { isLoading: returningSale }] = useReturnSaleMutation();
   const [searchCustomers, { isFetching: customersSearching }] = useLazySearchCustomersQuery();
+  const [searchMasters, { isFetching: mastersSearching }] = useLazySearchMastersQuery();
 
   const categories = categoriesRes.categories || [];
   const products = (productsRes.products || []).filter((item) => Number(item?.quantity || 0) > 0);
@@ -197,6 +211,15 @@ export function CashierPage({ user, onLogout }) {
   const [debtCustomerSearch, setDebtCustomerSearch] = useState("");
   const [debtCustomerSeed, setDebtCustomerSeed] = useState([]);
   const [debtCustomerResults, setDebtCustomerResults] = useState([]);
+  const [saleMode, setSaleMode] = useState("normal");
+  const [masterSaleOpen, setMasterSaleOpen] = useState(false);
+  const [masterSaleMode, setMasterSaleMode] = useState("existing");
+  const [selectedMasterId, setSelectedMasterId] = useState("");
+  const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [masterSearch, setMasterSearch] = useState("");
+  const [masterSeed, setMasterSeed] = useState([]);
+  const [masterResults, setMasterResults] = useState([]);
+  const [masterSale, setMasterSale] = useState({ id: "", fullName: "", phone: "", vehicleId: "", vehiclePlate: "", vehicleModel: "" });
   const [displayCurrency, setDisplayCurrency] = useState(() => {
     if (typeof window === "undefined") return "uzs";
     const saved = window.localStorage.getItem("displayCurrency");
@@ -217,6 +240,7 @@ export function CashierPage({ user, onLogout }) {
     mixed: { cash: "", card: "", click: "" }
   });
   const keyboardEnabled = settingsRes?.settings?.keyboardEnabled !== false;
+  const ustalarEnabled = settingsRes?.settings?.ustalarEnabled === true;
   const usdRate = Number(settingsRes?.settings?.usdRate || 12171);
   const formatCurrency = (amount) => formatDisplayMoney(amount, displayCurrency, usdRate);
 
@@ -229,6 +253,12 @@ export function CashierPage({ user, onLogout }) {
       window.localStorage.setItem("displayCurrency", resolvedCurrency);
     }
   }, [settingsRes]);
+
+  useEffect(() => {
+    if (ustalarEnabled) return;
+    setSaleMode("normal");
+    setMasterSaleOpen(false);
+  }, [ustalarEnabled]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -282,17 +312,26 @@ export function CashierPage({ user, onLogout }) {
   const canSell = cart.length > 0
     && totalAmount > 0
     && !!paymentType
+    && (saleMode !== "master" || (!!masterSale.fullName.trim() && !!masterSale.vehiclePlate.trim()))
     && !creatingSale
-    && (paymentType !== "debt" || (!!debtCustomer.fullName.trim() && !!debtCustomer.phone.trim() && !!debtCustomer.address.trim()))
+    && (paymentType !== "debt" || saleMode === "master" || (!!debtCustomer.fullName.trim() && !!debtCustomer.phone.trim() && !!debtCustomer.address.trim()))
     && (paymentType !== "mixed" || (mixedSum > 0 && Math.abs(mixedSum - totalAmountDisplay) < 0.001));
 
   const handlePaymentTypeSelect = (type) => {
     setPaymentType(type);
     if (type === "debt") {
-      setDebtCustomerMode("existing");
-      setSelectedDebtCustomerId("");
-      setDebtCustomerSearch("");
-      setDebtCustomerOpen(true);
+      if (saleMode === "master") {
+        setMasterSaleMode("existing");
+        setSelectedMasterId("");
+        setSelectedVehicleId("");
+        setMasterSearch("");
+        setMasterSaleOpen(true);
+      } else {
+        setDebtCustomerMode("existing");
+        setSelectedDebtCustomerId("");
+        setDebtCustomerSearch("");
+        setDebtCustomerOpen(true);
+      }
     }
   };
 
@@ -339,6 +378,50 @@ export function CashierPage({ user, onLogout }) {
 
     return () => clearTimeout(timer);
   }, [debtCustomerOpen, debtCustomerMode, debtCustomerSearch, debtCustomerSeed, searchCustomers]);
+
+  useEffect(() => {
+    if (!masterSaleOpen || masterSaleMode !== "existing") return;
+    const loadInitialMasters = async () => {
+      try {
+        const data = await searchMasters({ q: "" }).unwrap();
+        const masters = data?.masters || [];
+        setMasterSeed(masters);
+        if (!masterSearch.trim()) {
+          setMasterResults(masters);
+        }
+      } catch {
+        setMasterSeed([]);
+        if (!masterSearch.trim()) {
+          setMasterResults([]);
+        }
+      }
+    };
+    loadInitialMasters();
+  }, [masterSaleOpen, masterSaleMode, searchMasters]);
+
+  useEffect(() => {
+    if (!masterSaleOpen || masterSaleMode !== "existing") return;
+    const q = masterSearch.trim();
+    if (!q) {
+      setMasterResults(masterSeed);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const data = await searchMasters({ q }).unwrap();
+        const remoteMasters = data?.masters || [];
+        const localMasters = masterSeed.filter((master) => masterMatches(master, q));
+        const mergedMasters = [...localMasters, ...remoteMasters].filter((master, index, list) => (
+          list.findIndex((entry) => String(entry?._id) === String(master?._id)) === index
+        ));
+        setMasterResults(mergedMasters);
+      } catch {
+        setMasterResults(masterSeed.filter((master) => masterMatches(master, q)));
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [masterSaleMode, masterSaleOpen, masterSearch, masterSeed, searchMasters]);
 
   const handleMixedCashChange = (rawValue) => {
     const parsed = Number(rawValue || 0);
@@ -410,6 +493,14 @@ export function CashierPage({ user, onLogout }) {
     if (Number(returnForm.mixed.click || 0) > Number(available.click || 0) + 0.001) return false;
     return true;
   }, [returnForm, returnMixedSum, returnQtyNum, returnTotal]);
+
+  const selectedExistingMaster = useMemo(
+    () => masterResults.find((entry) => entry._id === selectedMasterId) || null,
+    [masterResults, selectedMasterId]
+  );
+  const canSaveMasterSale = masterSaleMode === "new"
+    ? !!masterSale.fullName.trim() && !!masterSale.vehiclePlate.trim()
+    : !!selectedMasterId && !!masterSale.fullName.trim() && !!masterSale.vehiclePlate.trim();
 
   const addToCart = (product) => {
     const unit = String(product.unit || "dona").toLowerCase();
@@ -542,6 +633,14 @@ export function CashierPage({ user, onLogout }) {
     setDebtCustomerSearch("");
     setDebtCustomerResults([]);
     setDebtCustomer({ fullName: "", phone: "", address: "" });
+    setSaleMode("normal");
+    setMasterSaleOpen(false);
+    setMasterSaleMode("existing");
+    setSelectedMasterId("");
+    setSelectedVehicleId("");
+    setMasterSearch("");
+    setMasterResults([]);
+    setMasterSale({ id: "", fullName: "", phone: "", vehicleId: "", vehiclePlate: "", vehicleModel: "" });
     closeQtyKeyboard();
   };
 
@@ -592,7 +691,8 @@ export function CashierPage({ user, onLogout }) {
         items: sellableItems,
         paymentType,
         payments,
-        customer: paymentType === "debt" ? debtCustomer : undefined
+        customer: paymentType === "debt" && saleMode !== "master" ? debtCustomer : undefined,
+        master: saleMode === "master" ? masterSale : undefined
       }).unwrap();
       await refetchSales();
       if (window.confirm("Chek chiqsinmi?")) {
@@ -855,6 +955,21 @@ export function CashierPage({ user, onLogout }) {
         </div>
 
         <div className="cashier-pay">
+          {ustalarEnabled ? (
+            <>
+              <p>Sotuv turi</p>
+              <div className="cashier-pay-types" style={{ marginBottom: "10px" }}>
+                <button type="button" className={saleMode === "normal" ? "active" : ""} onClick={() => setSaleMode("normal")}>Oddiy</button>
+                <button type="button" className={saleMode === "master" ? "active" : ""} onClick={() => { setSaleMode("master"); setMasterSaleOpen(true); }}>Usta uchun</button>
+              </div>
+              {saleMode === "master" ? (
+                <p className="hint">
+                  Usta: {masterSale.fullName || "-"} | Mashina: {masterSale.vehiclePlate || "-"} {masterSale.vehicleModel ? `(${masterSale.vehicleModel})` : ""}
+                  <button type="button" className="ghost" onClick={() => setMasterSaleOpen(true)}> Usta tanlash </button>
+                </p>
+              ) : null}
+            </>
+          ) : null}
           <p>To'lov turi</p>
           <div className="cashier-pay-types">
             <button type="button" className={paymentType === "cash" ? "active" : ""} onClick={() => handlePaymentTypeSelect("cash")}><Icon name="cash" />Naqd</button>
@@ -878,7 +993,7 @@ export function CashierPage({ user, onLogout }) {
               </p>
             </div>
           ) : null}
-          {paymentType === "debt" ? (
+          {paymentType === "debt" && saleMode !== "master" ? (
             <p className="hint">
               Mijoz: {debtCustomer.fullName || "-"} | {debtCustomer.phone || "-"}
               <button type="button" className="ghost" onClick={() => setDebtCustomerOpen(true)}> Mijoz tanlash </button>
@@ -990,11 +1105,21 @@ export function CashierPage({ user, onLogout }) {
                         {sale.transactionType === "debt_payment" || sale.paymentType === "debt_payment" ? (
                           <div className="sales-history-products">
                             <div className="sales-history-product-line">
-                              <span>Qarz to'lovi {sale.customerName ? `(${sale.customerName})` : ""}</span>
+                              <span>
+                                Qarz to'lovi
+                                {sale.masterName ? ` (${sale.masterName} - ${sale.vehiclePlate || "-"})` : ""}
+                                {!sale.masterName && sale.customerName ? ` (${sale.customerName})` : ""}
+                              </span>
                             </div>
                           </div>
                         ) : (
                           <div className="sales-history-products">
+                            {sale.masterName ? (
+                              <div className="sales-history-status">
+                                <span className="badge sales-history-badge">{sale.masterName}</span>
+                                <small>{sale.vehiclePlate || "-"} {sale.vehicleModel ? `| ${sale.vehicleModel}` : ""}</small>
+                              </div>
+                            ) : null}
                             {isSaleFullyReturned(sale) ? (
                               <div className="sales-history-status">
                                 <span className="badge sales-history-badge returned">Vozvrat qilindi</span>
@@ -1242,6 +1367,180 @@ export function CashierPage({ user, onLogout }) {
               <div className="modal-actions">
                 <button type="button" className="ghost" onClick={() => setDebtCustomerOpen(false)}>Bekor qilish</button>
                 <button type="submit">Saqlash</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
+
+      {masterSaleOpen ? (
+        <div className="modal-backdrop" onClick={() => setMasterSaleOpen(false)}>
+          <section className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Usta uchun sotuv</h3>
+            <div className="cashier-pay-types" style={{ marginBottom: "10px", gridTemplateColumns: "repeat(2, 1fr)" }}>
+              <button
+                type="button"
+                className={masterSaleMode === "existing" ? "active" : ""}
+                onClick={() => setMasterSaleMode("existing")}
+              >
+                Mavjud usta
+              </button>
+              <button
+                type="button"
+                className={masterSaleMode === "new" ? "active" : ""}
+                onClick={() => {
+                  setMasterSaleMode("new");
+                  setSelectedMasterId("");
+                  setSelectedVehicleId("");
+                  setMasterSale({ id: "", fullName: "", phone: "", vehicleId: "", vehiclePlate: "", vehicleModel: "" });
+                }}
+              >
+                Yangi usta
+              </button>
+            </div>
+
+            <form
+              className="modal-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!canSaveMasterSale) return;
+                setMasterSaleOpen(false);
+              }}
+            >
+              {masterSaleMode === "existing" ? (
+                <>
+                  <label>
+                    Ustani qidiring
+                    <input
+                      value={masterSearch}
+                      onChange={(e) => setMasterSearch(e.target.value)}
+                      placeholder="Ism, telefon, mashina raqami..."
+                    />
+                  </label>
+                  <div style={{ marginBottom: "10px", display: "grid", gap: "8px", maxHeight: "170px", overflow: "auto" }}>
+                    {mastersSearching ? (
+                      <p className="hint">Yuklanmoqda...</p>
+                    ) : masterResults.length < 1 ? (
+                      <p className="hint">Usta topilmadi</p>
+                    ) : masterResults.map((master) => (
+                      <button
+                        key={master._id}
+                        type="button"
+                        className="ghost"
+                        style={{
+                          width: "100%",
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          border: selectedMasterId === master._id ? "1px solid rgba(56,189,248,0.65)" : "1px solid rgba(148,163,184,0.35)",
+                          background: selectedMasterId === master._id ? "rgba(14,116,144,0.35)" : "rgba(15,23,42,0.55)"
+                        }}
+                        onClick={() => {
+                          setSelectedMasterId(master._id);
+                          setSelectedVehicleId("");
+                          setMasterSale({
+                            id: master._id,
+                            fullName: master.fullName || "",
+                            phone: master.phone || "",
+                            vehicleId: "",
+                            vehiclePlate: "",
+                            vehicleModel: ""
+                          });
+                        }}
+                        >
+                          <span>{master.fullName}</span>
+                          <span>{master.phone || "-"}</span>
+                        </button>
+                    ))}
+                  </div>
+
+                  {selectedMasterId ? (
+                    <>
+                      <p className="hint">Mashina tanlang yoki yangisini kiriting</p>
+                      <div style={{ marginBottom: "10px", display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
+                        {(selectedExistingMaster?.vehicles || []).map((vehicle) => (
+                          <button
+                            key={vehicle._id}
+                            type="button"
+                            className="ghost"
+                            style={{
+                              width: "100%",
+                              padding: "12px 14px",
+                              display: "grid",
+                              gap: "6px",
+                              justifyContent: "flex-start",
+                              textAlign: "left",
+                              border: selectedVehicleId === vehicle._id ? "1px solid rgba(56,189,248,0.65)" : "1px solid rgba(148,163,184,0.35)"
+                            }}
+                            onClick={() => {
+                              setSelectedVehicleId(vehicle._id);
+                              setMasterSale((prev) => ({
+                                ...prev,
+                                vehicleId: vehicle._id,
+                                vehiclePlate: vehicle.plateNumber || "",
+                                vehicleModel: vehicle.model || ""
+                              }));
+                            }}
+                          >
+                            <strong>{vehicle.plateNumber}</strong>
+                            <span style={{ opacity: 0.8 }}>{vehicle.model || "-"}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="hint">Mavjud ustani ro'yxatdan tanlang. Agar usta hali bazada bo'lmasa, `Yangi usta` tabiga o'ting.</p>
+                  )}
+                </>
+              ) : null}
+
+              {masterSaleMode === "new" ? (
+                <>
+                  <label>
+                    Usta ismi
+                    <input
+                      value={masterSale.fullName}
+                      onChange={(e) => setMasterSale((prev) => ({ ...prev, fullName: e.target.value }))}
+                      placeholder="Masalan: Bekzod"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Telefon
+                    <input
+                      value={masterSale.phone}
+                      onChange={(e) => setMasterSale((prev) => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+99890..."
+                    />
+                  </label>
+                  <label>
+                    Mashina raqami
+                    <input
+                      value={masterSale.vehiclePlate}
+                      onChange={(e) => {
+                        setSelectedVehicleId("");
+                        setMasterSale((prev) => ({ ...prev, vehicleId: "", vehiclePlate: e.target.value.toUpperCase() }));
+                      }}
+                      placeholder="50V560YA"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Mashina modeli
+                    <input
+                      value={masterSale.vehicleModel}
+                      onChange={(e) => {
+                        setSelectedVehicleId("");
+                        setMasterSale((prev) => ({ ...prev, vehicleId: "", vehicleModel: e.target.value }));
+                      }}
+                      placeholder="Gentra"
+                    />
+                  </label>
+                </>
+              ) : null}
+
+              <div className="modal-actions">
+                <button type="button" className="ghost" onClick={() => setMasterSaleOpen(false)}>Bekor qilish</button>
+                <button type="submit" disabled={!canSaveMasterSale}>Saqlash</button>
               </div>
             </form>
           </section>
