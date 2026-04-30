@@ -1048,10 +1048,13 @@ button.ghost {
 
 .customer-modal {
   width: min(1280px, 96vw);
+  max-height: 92vh;
   padding: 0;
   border: 1px solid rgba(126, 154, 196, 0.5);
   background: linear-gradient(145deg, #102650, #0b1f47);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .customer-modal-head {
@@ -1079,6 +1082,9 @@ button.ghost {
 
 .customer-modal-body {
   padding: 18px 34px 24px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 .customer-modal-date {
